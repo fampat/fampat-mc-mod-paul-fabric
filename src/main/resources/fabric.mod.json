@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "id": "paul",
+  "version": "${version}",
+
+  "name": "Fampat Paul Mod",
+  "description": "This is an wooooff description!",
+  "authors": [
+    "Fampat"
+  ],
+  "contact": {
+    "homepage": "https://www.fampat.de/",
+    "sources": "https://github.com/fampat/fampat-mc-mod-fabric-example"
+  },
+
+  "license": "MIT",
+  "icon": "assets/modid/icon.png",
+
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "de.fampat.paul.Mod"
+    ]
+  },
+  "mixins": [
+    "paul.mixins.json"
+  ],
+
+  "depends": {
+    "fabricloader": ">=0.14.11",
+    "fabric-api": "*",
+    "minecraft": "~1.19.2",
+    "java": ">=17"
+  },
+  "suggests": {
+    "another-mod": "*"
+  }
+}

@@ -1,2 +1,2 @@
-# fampat-mc-mod-paul-fabric
-How beloved dog, farewell!
+# fampat-mc-mod-fabric-example
+My example and learning mod
