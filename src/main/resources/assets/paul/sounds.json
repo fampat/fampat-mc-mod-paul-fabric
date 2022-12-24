@@ -1,0 +1,54 @@
+{
+    "paul.ambient": {
+        "category": "neutral",
+        "sounds": [
+            {
+                "name": "paul:paul.bark.0",
+                "type": "event",
+                "volume": 0.6,
+                "attenuation_distance": 20
+            },
+            {
+                "name": "paul:paul.bark.1",
+                "type": "event",
+                "volume": 0.6,
+                "attenuation_distance": 20
+            },
+            {
+                "name": "paul:paul.bark.2",
+                "type": "event",
+                "volume": 0.6,
+                "attenuation_distance": 20
+            }
+        ],
+        "subtitle": "paul:subtitles.paul.ambient"
+    },
+    "paul.bark.0": {
+        "category": "neutral",
+        "sounds": [
+            "paul:paul_bark_0"
+        ],
+        "subtitle": "paul:subtitles.paul.bark.0"
+    },
+    "paul.bark.1": {
+        "category": "neutral",
+        "sounds": [
+            "paul:paul_bark_1"
+        ],
+        "subtitle": "paul:subtitles.paul.bark.1"
+    },
+    "paul.bark.2": {
+        "category": "neutral",
+        "sounds": [
+            "paul:paul_bark_2"
+        ],
+        "subtitle": "paul:subtitles.paul.bark.2"
+    },
+    "paul.walk.0": {
+        "category": "neutral",
+        "sounds": [
+            "paul:paul_walk_0"
+        ],
+        "subtitle": "paul:subtitles.paul.walk.0"
+    }
+}

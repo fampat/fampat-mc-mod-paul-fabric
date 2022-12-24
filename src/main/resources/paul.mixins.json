@@ -1,12 +1,12 @@
 {
   "required": true,
   "minVersion": "0.8",
-  "package": "de.fampat.paul.mixin",
+  "package": "de.fampat.paul.mixins",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
   ],
   "client": [
-    "Mixin"
+    "ClientTitleScreenMixin"
   ],
   "injectors": {
     "defaultRequire": 1

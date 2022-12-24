@@ -20,6 +20,9 @@
   "entrypoints": {
     "main": [
       "de.fampat.paul.Mod"
+    ],
+    "client": [
+      "de.fampat.paul.client.PaulClient"
     ]
   },
   "mixins": [

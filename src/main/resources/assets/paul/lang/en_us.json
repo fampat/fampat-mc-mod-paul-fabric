@@ -1,0 +1,5 @@
+{
+	"entity.paul.paul_entity" : "Paul", 
+	"container.paul.paul_container" : "Pauls Inventory",
+	"config.paul.owner" : "Player name who own Paul, the only player who can call Paul."
+}
