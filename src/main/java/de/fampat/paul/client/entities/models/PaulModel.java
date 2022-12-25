@@ -27,6 +27,8 @@ public class PaulModel<T extends PaulEntity> extends TintableAnimalModel<T> {
     private final ModelPart leg2;
     private final ModelPart leg3;
 
+    private float headAngle;
+
     public PaulModel(ModelPart part) {
         this.head = part.getChild("head");
         this.tongue_r1 = part.getChild("head").getChild("tongue_r1");
@@ -230,18 +232,18 @@ public class PaulModel<T extends PaulEntity> extends TintableAnimalModel<T> {
             this.leg2.setPivot(3.0F, 21.5F, 5.5F);
             this.leg2.pitch = -((float) Math.PI / 2F);
             this.tail.setPivot(0.0F, 19.5F, 7.5F);
-        } else if (paulEntity.eatGrasAnimationTick > 0) {
+        } else if (paulEntity.eatGrassTimer > 0) {
             // Eating gras animation set
             this.leg0.pitch = 0F;
             this.leg1.pitch = 0F;
             this.leg2.pitch = 0F;
             this.leg3.pitch = 0F;
-            this.neck1_r1.setPivot(1F, -0.5F, -5.5F);
-            this.neck2_r1.setPivot(1F, -0.5F, -5.5F);
+            this.neck1_r1.setPivot(1F, 0.5F, -6F);
+            this.neck2_r1.setPivot(1F, 0.5F, -5F);
             this.neck1_r1.pitch = 1.7F;
-            this.neck2_r1.pitch = 1.9F;
-            this.head.pivotY = 6.0F + paulEntity.getHeadEatPositionScale(tickDelta) * 9.0F;
-            this.head.pitch = paulEntity.getHeadEatAngleScale(tickDelta);
+            this.neck2_r1.pitch = 2.1F;
+            this.head.pivotY = 6.0f + paulEntity.getNeckAngle(tickDelta) * 9.0f;
+            this.headAngle = paulEntity.getHeadAngle(tickDelta);
         } else {
             // Default animation set
             this.body.pitch = 0.0F;
@@ -260,5 +262,9 @@ public class PaulModel<T extends PaulEntity> extends TintableAnimalModel<T> {
     public void setAngles(PaulEntity paulEntity, float limbAngle, float limbDistance, float animationProgress, float headYaw, float headPitch) {
         this.head.pitch = headPitch * ((float)Math.PI / 270);
         this.head.yaw = headYaw * ((float)Math.PI / 180);
+
+        if (paulEntity.eatGrassTimer > 0) {
+            this.head.pitch = this.headAngle;
+        }
     }
 }

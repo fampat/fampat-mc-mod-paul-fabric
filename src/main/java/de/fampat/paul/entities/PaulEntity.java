@@ -14,7 +14,6 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.ai.goal.ActiveTargetGoal;
-import net.minecraft.entity.ai.goal.AnimalMateGoal;
 import net.minecraft.entity.ai.goal.AttackWithOwnerGoal;
 import net.minecraft.entity.ai.goal.EscapeDangerGoal;
 import net.minecraft.entity.ai.goal.FleeEntityGoal;
@@ -49,7 +48,6 @@ import net.minecraft.entity.passive.PassiveEntity;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.entity.passive.TurtleEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.item.DyeItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -75,6 +73,7 @@ import net.minecraft.world.WorldAccess;
 import net.minecraft.world.event.GameEvent;
 import org.jetbrains.annotations.Nullable;
 
+import de.fampat.paul.goals.PaulEatGrassGoal;
 import de.fampat.paul.registry.PaulRegistry;
 
 public class PaulEntity
@@ -99,9 +98,16 @@ public class PaulEntity
     private float shakeProgress;
     private float lastShakeProgress;
     private static final UniformIntProvider ANGER_TIME_RANGE = TimeHelper.betweenSeconds(20, 39);
+
     private int tongueTick;
     private boolean tongueTickForward;
-    public int eatGrasAnimationTick;
+    public int eatGrassTimer;
+
+    private PaulEatGrassGoal eatGrassGoal;
+
+    private boolean carryBone = false;
+    //private int carryBoneTimer = 0;
+    //private int carryBoneMaxTime = 6000;
 
     @Nullable
     private UUID angryAt;
@@ -118,14 +124,12 @@ public class PaulEntity
 
     @Override
     protected void initGoals() {
+        this.eatGrassGoal = new PaulEatGrassGoal(this);
         this.goalSelector.add(1, new SwimGoal(this));
-        this.goalSelector.add(1, new WolfEscapeDangerGoal(1.5));
         this.goalSelector.add(2, new SitGoal(this));
-        this.goalSelector.add(3, new AvoidLlamaGoal<LlamaEntity>(this, LlamaEntity.class, 24.0f, 1.5, 1.5));
         this.goalSelector.add(4, new PounceAtTargetGoal(this, 0.4f));
         this.goalSelector.add(5, new MeleeAttackGoal(this, 1.0, true));
         this.goalSelector.add(6, new FollowOwnerGoal(this, 1.0, 10.0f, 2.0f, false));
-        this.goalSelector.add(7, new AnimalMateGoal(this, 1.0));
         this.goalSelector.add(8, new WanderAroundFarGoal(this, 1.0));
         this.goalSelector.add(10, new LookAtEntityGoal(this, PlayerEntity.class, 8.0f));
         this.goalSelector.add(10, new LookAroundGoal(this));
@@ -141,11 +145,12 @@ public class PaulEntity
         this.targetSelector.add(7,
                 new ActiveTargetGoal<AbstractSkeletonEntity>((MobEntity) this, AbstractSkeletonEntity.class, false));
         this.targetSelector.add(8, new UniversalAngerGoal<PaulEntity>(this, true));
+        this.goalSelector.add(120, this.eatGrassGoal);
     }
 
     public static DefaultAttributeContainer.Builder createPaulAttributes() {
         return MobEntity.createMobAttributes().add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.3f)
-                .add(EntityAttributes.GENERIC_MAX_HEALTH, 8.0).add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 2.0);
+                .add(EntityAttributes.GENERIC_MAX_HEALTH, 20.0).add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 2.0);
     }
 
     @Override
@@ -217,36 +222,45 @@ public class PaulEntity
     }
 
     @Environment(value = EnvType.CLIENT)
-    public float getHeadEatPositionScale(float tickDelta) {
-        if (this.eatGrasAnimationTick <= 0) {
-            return 0.0F;
-        } else if (this.eatGrasAnimationTick >= 4 && this.eatGrasAnimationTick <= 36) {
-            return 1.0F;
-        } else {
-            return this.eatGrasAnimationTick < 4 ? ((float) this.eatGrasAnimationTick - tickDelta) / 4.0F
-                    : -((float) (this.eatGrasAnimationTick - 40) - tickDelta) / 4.0F;
+    public float getNeckAngle(float delta) {
+        if (this.eatGrassTimer <= 0) {
+            return 0.0f;
         }
+        if (this.eatGrassTimer >= 4 && this.eatGrassTimer <= 36) {
+            return 1.0f;
+        }
+        if (this.eatGrassTimer < 4) {
+            return ((float)this.eatGrassTimer - delta) / 4.0f;
+        }
+        return -((float)(this.eatGrassTimer - 40) - delta) / 4.0f;
     }
 
     @Environment(value = EnvType.CLIENT)
-    public float getHeadEatAngleScale(float tickDelta) {
-        if (this.eatGrasAnimationTick > 4 && this.eatGrasAnimationTick <= 36) {
-            float f = ((float) (this.eatGrasAnimationTick - 4) - tickDelta) / 32.0F;
-            return ((float) Math.PI / 5F) + 0.21991149F * (float) Math.sin(f * 28.7F);
-        } else {
-            return this.eatGrasAnimationTick > 0 ? ((float) Math.PI / 5F) : this.getPitch() * ((float) Math.PI / 180F);
+    public float getHeadAngle(float delta) {
+        if (this.eatGrassTimer > 4 && this.eatGrassTimer <= 36) {
+            float f = ((float)(this.eatGrassTimer - 4) - delta) / 32.0f;
+            return 0.62831855f + 0.21991149f * MathHelper.sin(f * 28.7f);
         }
+        if (this.eatGrassTimer > 0) {
+            return 0.62831855f;
+        }
+        return this.getPitch() * ((float)Math.PI / 180);
     }
 
     @Override
     public void tickMovement() {
         super.tickMovement();
+        if (this.world.isClient) {
+            this.eatGrassTimer = Math.max(0, this.eatGrassTimer - 1);
+        }
+        
         if (!this.world.isClient && this.furWet && !this.canShakeWaterOff && !this.isNavigating() && this.onGround) {
             this.canShakeWaterOff = true;
             this.shakeProgress = 0.0f;
             this.lastShakeProgress = 0.0f;
             this.world.sendEntityStatus(this, EntityStatuses.SHAKE_OFF_WATER);
         }
+        
         if (!this.world.isClient) {
             this.tickAngerLogic((ServerWorld) this.world, true);
         }
@@ -334,6 +348,10 @@ public class PaulEntity
         super.onDeath(damageSource);
     }
 
+    public boolean isCarryBone() {
+        return this.carryBone;
+    }
+
     /**
      * Returns whether Paul's fur is wet.
      * <p>
@@ -392,18 +410,21 @@ public class PaulEntity
     }
 
     @Override
+    public boolean isInvulnerable() {
+        // Paul cannot die! NEVER!
+        return true;
+    }
+
+    @Override
+    protected void mobTick() {
+        this.eatGrassTimer = this.eatGrassGoal.getTimer();
+        super.mobTick();
+    }
+
+    @Override
     public boolean damage(DamageSource source, float amount) {
-        if (this.isInvulnerableTo(source)) {
-            return false;
-        }
-        Entity entity = source.getAttacker();
-        if (!this.world.isClient) {
-            this.setSitting(false);
-        }
-        if (entity != null && !(entity instanceof PlayerEntity) && !(entity instanceof PersistentProjectileEntity)) {
-            amount = (amount + 1.0f) / 2.0f;
-        }
-        return super.damage(source, amount);
+        // Paul cannot be harmed! NEVER!
+        return false;
     }
 
     @Override
@@ -494,6 +515,8 @@ public class PaulEntity
             this.lastShakeProgress = 0.0f;
         } else if (status == EntityStatuses.RESET_WOLF_SHAKE) {
             this.resetShake();
+        } else if (status == EntityStatuses.SET_SHEEP_EAT_GRASS_TIMER_OR_PRIME_TNT_MINECART) {
+            this.eatGrassTimer = 40;
         } else {
             super.handleStatus(status);
         }
