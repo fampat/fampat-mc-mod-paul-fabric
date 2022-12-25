@@ -1,7 +1,6 @@
 package de.fampat.paul.client.entities.models;
 
 import com.google.common.collect.ImmutableList;
-
 import de.fampat.paul.entities.PaulEntity;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -11,11 +10,9 @@ import net.minecraft.client.model.ModelPartBuilder;
 import net.minecraft.client.model.ModelPartData;
 import net.minecraft.client.model.ModelTransform;
 import net.minecraft.client.model.TexturedModelData;
-import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.entity.model.TintableAnimalModel;
-import net.minecraft.client.util.math.MatrixStack;
 
-@Environment(value=EnvType.CLIENT)
+@Environment(value = EnvType.CLIENT)
 public class PaulModel<T extends PaulEntity> extends TintableAnimalModel<T> {
     private final ModelPart head;
     private final ModelPart tongue_r1;
@@ -29,8 +26,6 @@ public class PaulModel<T extends PaulEntity> extends TintableAnimalModel<T> {
     private final ModelPart leg1;
     private final ModelPart leg2;
     private final ModelPart leg3;
-
-    //private float eatingGrasHeadXRot = 0F;
 
     public PaulModel(ModelPart part) {
         this.head = part.getChild("head");
@@ -185,10 +180,9 @@ public class PaulModel<T extends PaulEntity> extends TintableAnimalModel<T> {
     }
 
     @Override
-    public void animateModel(T paulEntity, float f, float g, float h) {
-        //this.eatingGrasHeadXRot = 0F;
-
-/*         this.head.pitch = 0F;
+    public void animateModel(PaulEntity paulEntity, float limbAngle, float limbDistance, float tickDelta) {
+        // Initial animation settings
+        this.head.pitch = 0F;
         this.head.setPivot(0.0F, 7.5F, -9.5F);
         this.neck1_r1.setPivot(1.0F, -0.5F, -8.0F);
         this.neck2_r1.setPivot(1.0F, -0.5F, -8.0F);
@@ -199,76 +193,72 @@ public class PaulModel<T extends PaulEntity> extends TintableAnimalModel<T> {
         this.leg3.setPivot(3.0F, 13.5F, -6.25F);
         this.tail.setPivot(0.0F, 10.0F, 7.5F);
         this.tongue_r1.setPivot(0.0F, 0.5F, -4.5F);
+        this.tongue_r1.pitch = 0.35F;
+        this.neck1_r1.pitch = 0.6109F;
+        this.neck2_r1.pitch = 0.6109F;
 
-        this.tongue_r1.pivotX = 0.35F;
-        this.neck1_r1.pivotX = 0.6109F;
-        this.neck2_r1.pivotX = 0.6109F; */
+        /*
+         * if (paulEntity.isCarryBone() || paulEntity.eatGrasAnimationTick > 0) {
+         * this.tongue_r1.setPivot(0.0F, 0.5F, -3.4F);
+         * }
+         */
 
-/*         if (paulEntity.isCarryBone() || paulEntity.eatGrasAnimationTick > 0) {
-            this.tongue_r1.setPivot(0.0F, 0.5F, -3.4F);
-        } */
-
-/*         if (paulEntity.isInSittingPose()) {
-            this.head.setPivot(0F, 5F, -3.75F);
-            this.body.pivotX = -((float) Math.PI / 4.25F);
-            this.body.setPivot(0.0F, 14.5F, -1.0F);
-            this.leg0.setPivot(-3.0F, 13.5F, -6.25F);
-            this.leg0.pivotX = 0F;
-            this.leg1.setPivot(-3.0F, 21.5F, 5.5F);
-            this.leg1.pivotX = -((float) Math.PI / 2F);
-            this.leg3.setPivot(3.0F, 13.5F, -6.25F);
-            this.leg3.pivotX = 0F;
-            this.leg2.setPivot(3.0F, 21.5F, 5.5F);
-            this.leg2.pivotX = -((float) Math.PI / 2F);
-            this.tail.setPivot(0.0F, 19.5F, 7.5F);
-        } else if (paulEntity.eatGrasAnimationTick > 0) {
-            this.leg0.pivotX = 0F;
-            this.leg1.pivotX = 0F;
-            this.leg2.pivotX = 0F;
-            this.leg3.pivotX = 0F;
-            this.neck1_r1.setPivot(1F, -0.5F, -5.5F);
-            this.neck2_r1.setPivot(1F, -0.5F, -5.5F);
-            this.neck1_r1.pivotX = 1.7F;
-            this.neck2_r1.pivotX = 1.9F;
-            this.head.pitch = 6.0F + paulEntity.getHeadEatPositionScale(h) * 9.0F;
-            this.eatingGrasHeadXRot = paulEntity.getHeadEatAngleScale(h);
-        } else { */
-/*             this.body.pivotX = 0.0F;
-            this.leg0.pivotX = (float) Math.cos(f * 0.6662F) * 1.4F * g;
-            this.leg1.pivotX = (float) Math.cos(f * 0.6662F + (float) Math.PI) * 1.4F * g;
-            this.leg2.pivotX = (float) Math.cos(f * 0.6662F) * 1.4F * g;
-            this.leg3.pivotX = (float) Math.cos(f * 0.6662F + (float) Math.PI) * 1.4F * g;
-            this.tail.pivotY = (float) Math.cos(f * 0.6662F) * 1.4F * g;
-            this.ear_left_r1.pivotZ = (float) (Math.cos(f * 0.6662F + (float) Math.PI) * 0.3F * g)
-                    - 0.2F;
-            this.ear_right_r1.pivotZ = (float) (Math.cos(f * 0.6662F) * 0.3F * g) + 0.2F; */
-//        }
-
-/*         this.head.pivotZ = paulEntity.getHeadRollAngle(h) + paulEntity.getBodyRollAngle(h, 0.0F);
-        this.body.pivotZ = paulEntity.getBodyRollAngle(h, -0.16F);
-        this.tail.pivotZ = paulEntity.getBodyRollAngle(h, -0.2F); */
-    }
-
-    @Override
-    public void setAngles(PaulEntity paulEntity, float limbAngle, float limbDistance, float animationProgress, float headYaw, float headPitch) {
-/*         if (paulEntity.eatGrasAnimationTick > 0) {
-            this.head.pivotX = this.eatingGrasHeadXRot;
-        } else { */
-        //this.head.pivotX = headPitch * ((float) Math.PI / 200F);
+        // Tongue animation
+        //if (!paulEntity.isCarryBone()) {
+            this.tongue_r1.pitch = 0.35F + (paulEntity.getTongueTick() * ((float) Math.PI / 1800F));
+            this.tongue_r1.yaw = paulEntity.getTongueTick() * ((float) Math.PI / 1200F);
         //}
 
-        //this.head.pivotY = headYaw * ((float) Math.PI / 200F);
+        // Shake animation
+        this.head.roll = paulEntity.getBegAnimationProgress(tickDelta)
+                + paulEntity.getShakeAnimationProgress(tickDelta, 0.0f);
+        this.body.roll = paulEntity.getShakeAnimationProgress(tickDelta, -0.16f);
+        this.tail.roll = paulEntity.getShakeAnimationProgress(tickDelta, -0.2f);
 
-/*         if (!paulEntity.isCarryBone()) {
-            this.tongue_r1.pivotX = 0.35F + (paulEntity.getTongueTick() * ((float) Math.PI / 1800F));
-            this.tongue_r1.pivotY = paulEntity.getTongueTick() * ((float) Math.PI / 1200F);
-        } */
+        // Animation sets
+        if (paulEntity.isInSittingPose()) {
+            // Sit animation set
+            this.head.setPivot(0F, 5F, -3.75F);
+            this.body.pitch = -((float) Math.PI / 4.25F);
+            this.body.setPivot(0.0F, 14.5F, -1.0F);
+            this.leg0.setPivot(-3.0F, 13.5F, -6.25F);
+            this.leg0.pitch = 0F;
+            this.leg1.setPivot(-3.0F, 21.5F, 5.5F);
+            this.leg1.pitch = -((float) Math.PI / 2F);
+            this.leg3.setPivot(3.0F, 13.5F, -6.25F);
+            this.leg3.pitch = 0F;
+            this.leg2.setPivot(3.0F, 21.5F, 5.5F);
+            this.leg2.pitch = -((float) Math.PI / 2F);
+            this.tail.setPivot(0.0F, 19.5F, 7.5F);
+        } else if (paulEntity.eatGrasAnimationTick > 0) {
+            // Eating gras animation set
+            this.leg0.pitch = 0F;
+            this.leg1.pitch = 0F;
+            this.leg2.pitch = 0F;
+            this.leg3.pitch = 0F;
+            this.neck1_r1.setPivot(1F, -0.5F, -5.5F);
+            this.neck2_r1.setPivot(1F, -0.5F, -5.5F);
+            this.neck1_r1.pitch = 1.7F;
+            this.neck2_r1.pitch = 1.9F;
+            this.head.pivotY = 6.0F + paulEntity.getHeadEatPositionScale(tickDelta) * 9.0F;
+            this.head.pitch = paulEntity.getHeadEatAngleScale(tickDelta);
+        } else {
+            // Default animation set
+            this.body.pitch = 0.0F;
+            this.leg0.pitch = (float) Math.cos(limbAngle * 0.6662F) * 1.4F * limbDistance;
+            this.leg1.pitch = (float) Math.cos(limbAngle * 0.6662F + (float) Math.PI) * 1.4F * limbDistance;
+            this.leg2.pitch = (float) Math.cos(limbAngle * 0.6662F) * 1.4F * limbDistance;
+            this.leg3.pitch = (float) Math.cos(limbAngle * 0.6662F + (float) Math.PI) * 1.4F * limbDistance;
+            this.tail.yaw = (float) Math.cos(limbAngle * 0.6662F) * 1.4F * limbDistance;
+            this.ear_left_r1.roll = (float) (Math.cos(limbAngle * 0.6662F + (float) Math.PI) * 0.3F * limbDistance) - 0.2F;
+            this.ear_right_r1.roll = (float) (Math.cos(limbAngle * 0.6662F) * 0.3F * limbDistance) + 0.2F;
+        }
     }
 
-/*     @Override
-    public void render(MatrixStack matrices, VertexConsumer vertices, int light, int overlay, float red, float green, float blue, float alpha) {
-        ImmutableList.of(this.head, this.body, this.leg0, this.leg1, this.leg2, this.leg3, this.tail).forEach((modelRenderer) -> {
-            modelRenderer.render(matrices, vertices, light, overlay, red, green, blue, alpha);
-        });
-    } */
+    // Change the head angle to make Paul look "up" when watching the player
+    @Override
+    public void setAngles(PaulEntity paulEntity, float limbAngle, float limbDistance, float animationProgress, float headYaw, float headPitch) {
+        this.head.pitch = headPitch * ((float)Math.PI / 270);
+        this.head.yaw = headYaw * ((float)Math.PI / 180);
+    }
 }

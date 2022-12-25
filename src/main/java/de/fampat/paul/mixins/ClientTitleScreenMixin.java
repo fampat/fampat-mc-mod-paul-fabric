@@ -12,6 +12,6 @@ import de.fampat.paul.Mod;
 public class ClientTitleScreenMixin {
 	@Inject(at = @At("HEAD"), method = "init()V")
 	private void init(CallbackInfo info) {
-		Mod.LOGGER.info("MOEP: This line is printed by an example mod mixin!");
+		Mod.LOGGER.info("Paul: Mixed it in!");
 	}
 }
