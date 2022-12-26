@@ -14,7 +14,7 @@ import net.minecraft.client.render.entity.model.TintableAnimalModel;
 
 @Environment(value = EnvType.CLIENT)
 public class PaulModel<T extends PaulEntity> extends TintableAnimalModel<T> {
-    private final ModelPart head;
+    public final ModelPart head;
     private final ModelPart tongue_r1;
     private final ModelPart ear_right_r1;
     private final ModelPart ear_left_r1;

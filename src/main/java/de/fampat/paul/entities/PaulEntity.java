@@ -2,7 +2,6 @@ package de.fampat.paul.entities;
 
 import java.util.UUID;
 import java.util.function.Predicate;
-
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.block.BlockState;
@@ -15,7 +14,6 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.ai.goal.ActiveTargetGoal;
 import net.minecraft.entity.ai.goal.AttackWithOwnerGoal;
-import net.minecraft.entity.ai.goal.EscapeDangerGoal;
 import net.minecraft.entity.ai.goal.FleeEntityGoal;
 import net.minecraft.entity.ai.goal.FollowOwnerGoal;
 import net.minecraft.entity.ai.goal.LookAroundGoal;
@@ -26,7 +24,6 @@ import net.minecraft.entity.ai.goal.RevengeGoal;
 import net.minecraft.entity.ai.goal.SitGoal;
 import net.minecraft.entity.ai.goal.SwimGoal;
 import net.minecraft.entity.ai.goal.TrackOwnerAttackerGoal;
-import net.minecraft.entity.ai.goal.UniversalAngerGoal;
 import net.minecraft.entity.ai.goal.UntamedActiveTargetGoal;
 import net.minecraft.entity.ai.goal.WanderAroundFarGoal;
 import net.minecraft.entity.ai.pathing.PathNodeType;
@@ -36,8 +33,9 @@ import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
+import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.AbstractSkeletonEntity;
-import net.minecraft.entity.mob.Angerable;
 import net.minecraft.entity.mob.CreeperEntity;
 import net.minecraft.entity.mob.GhastEntity;
 import net.minecraft.entity.mob.MobEntity;
@@ -48,26 +46,29 @@ import net.minecraft.entity.passive.PassiveEntity;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.entity.passive.TurtleEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.DyeItem;
+import net.minecraft.inventory.EnderChestInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
 import net.minecraft.particle.ParticleTypes;
+import net.minecraft.screen.GenericContainerScreenHandler;
+import net.minecraft.screen.SimpleNamedScreenHandlerFactory;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.stat.Stats;
 import net.minecraft.tag.BlockTags;
+import net.minecraft.tag.TagKey;
+import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
-import net.minecraft.util.DyeColor;
 import net.minecraft.util.Hand;
-import net.minecraft.util.TimeHelper;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.intprovider.UniformIntProvider;
 import net.minecraft.util.math.random.Random;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldAccess;
 import net.minecraft.world.event.GameEvent;
@@ -77,14 +78,9 @@ import de.fampat.paul.goals.PaulEatGrassGoal;
 import de.fampat.paul.registry.PaulRegistry;
 
 public class PaulEntity
-        extends TameableEntity
-        implements Angerable {
+        extends TameableEntity {
     private static final TrackedData<Boolean> BEGGING = DataTracker.registerData(PaulEntity.class,
             TrackedDataHandlerRegistry.BOOLEAN);
-    private static final TrackedData<Integer> COLLAR_COLOR = DataTracker.registerData(PaulEntity.class,
-            TrackedDataHandlerRegistry.INTEGER);
-    private static final TrackedData<Integer> ANGER_TIME = DataTracker.registerData(PaulEntity.class,
-            TrackedDataHandlerRegistry.INTEGER);
 
     public static final Predicate<LivingEntity> FOLLOW_TAMED_PREDICATE = entity -> {
         EntityType<?> entityType = entity.getType();
@@ -97,7 +93,6 @@ public class PaulEntity
     private boolean canShakeWaterOff;
     private float shakeProgress;
     private float lastShakeProgress;
-    private static final UniformIntProvider ANGER_TIME_RANGE = TimeHelper.betweenSeconds(20, 39);
 
     private int tongueTick;
     private boolean tongueTickForward;
@@ -106,8 +101,8 @@ public class PaulEntity
     private PaulEatGrassGoal eatGrassGoal;
 
     private boolean carryBone = false;
-    //private int carryBoneTimer = 0;
-    //private int carryBoneMaxTime = 6000;
+    private int carryBoneTimer = 0;
+    private int carryBoneMaxTime = 6000;
 
     @Nullable
     private UUID angryAt;
@@ -136,15 +131,12 @@ public class PaulEntity
         this.targetSelector.add(1, new TrackOwnerAttackerGoal(this));
         this.targetSelector.add(2, new AttackWithOwnerGoal(this));
         this.targetSelector.add(3, new RevengeGoal(this, new Class[0]).setGroupRevenge(new Class[0]));
-        this.targetSelector.add(4,
-                new ActiveTargetGoal<PlayerEntity>(this, PlayerEntity.class, 10, true, false, this::shouldAngerAt));
         this.targetSelector.add(5,
                 new UntamedActiveTargetGoal<AnimalEntity>(this, AnimalEntity.class, false, FOLLOW_TAMED_PREDICATE));
         this.targetSelector.add(6, new UntamedActiveTargetGoal<TurtleEntity>(this, TurtleEntity.class, false,
                 TurtleEntity.BABY_TURTLE_ON_LAND_FILTER));
         this.targetSelector.add(7,
                 new ActiveTargetGoal<AbstractSkeletonEntity>((MobEntity) this, AbstractSkeletonEntity.class, false));
-        this.targetSelector.add(8, new UniversalAngerGoal<PaulEntity>(this, true));
         this.goalSelector.add(120, this.eatGrassGoal);
     }
 
@@ -157,8 +149,6 @@ public class PaulEntity
     protected void initDataTracker() {
         super.initDataTracker();
         this.dataTracker.startTracking(BEGGING, false);
-        this.dataTracker.startTracking(COLLAR_COLOR, DyeColor.RED.getId());
-        this.dataTracker.startTracking(ANGER_TIME, 0);
     }
 
     @Override
@@ -169,25 +159,15 @@ public class PaulEntity
     @Override
     public void writeCustomDataToNbt(NbtCompound nbt) {
         super.writeCustomDataToNbt(nbt);
-        nbt.putByte("CollarColor", (byte) this.getCollarColor().getId());
-        this.writeAngerToNbt(nbt);
     }
 
     @Override
     public void readCustomDataFromNbt(NbtCompound nbt) {
         super.readCustomDataFromNbt(nbt);
-        if (nbt.contains("CollarColor", NbtElement.NUMBER_TYPE)) {
-            this.setCollarColor(DyeColor.byId(nbt.getInt("CollarColor")));
-        }
-        this.readAngerFromNbt(this.world, nbt);
     }
 
     @Override
-    protected SoundEvent getAmbientSound() {
-        if (this.hasAngerTime()) {
-            return SoundEvents.ENTITY_WOLF_GROWL;
-        }
-        
+    protected SoundEvent getAmbientSound() {       
         if (this.random.nextInt(3) == 0) {
             if (this.isTamed() && this.getHealth() < 10.0f) {
                 return SoundEvents.ENTITY_WOLF_WHINE;
@@ -260,10 +240,6 @@ public class PaulEntity
             this.lastShakeProgress = 0.0f;
             this.world.sendEntityStatus(this, EntityStatuses.SHAKE_OFF_WATER);
         }
-        
-        if (!this.world.isClient) {
-            this.tickAngerLogic((ServerWorld) this.world, true);
-        }
     }
 
     // Tongue aninmation ticking
@@ -291,6 +267,9 @@ public class PaulEntity
 
         // Tick for tongue animation ticking
         this.handleTongueTick();
+
+        // Tick for bone carrying
+        this.handleBoneCarryTick();
 
         this.lastBegAnimationProgress = this.begAnimationProgress;
         this.begAnimationProgress = this.isBegging()
@@ -346,6 +325,42 @@ public class PaulEntity
         this.lastShakeProgress = 0.0f;
         this.shakeProgress = 0.0f;
         super.onDeath(damageSource);
+    }
+
+
+    private void handleBoneCarryTick() {
+        // No bone "lives" forever
+        if (this.isCarryBone() && this.carryBoneTimer > 0) {
+            // Countdown bone-carrying
+            this.carryBoneTimer--;
+
+            // Done with carrying bone
+            if (this.carryBoneTimer <= 0) {
+                this.carryBoneTimer = 0;
+                this.carryBone(false);
+            }
+        }
+    }
+
+    // Enable or disable carrying a bone
+    public void carryBone(boolean shallCarry) {
+        if (this.eatGrassTimer == 0) {
+            this.carryBone = shallCarry;
+
+            // Handle timer
+            if (shallCarry) {
+                this.carryBoneTimer = this.carryBoneMaxTime;
+            } else {
+                this.carryBoneTimer = 0;
+            }
+
+            // Sync bone status to clients
+            // Make sure its only called on server-side
+/*             if (!level.isClientSide) {
+                NetworkHandler.NETWORK.send(PacketDistributor.ALL.noArg(),
+                        new CPacketSyncPaulCarryBone(this.getId(), shallCarry));
+            } */
+        }
     }
 
     public boolean isCarryBone() {
@@ -455,56 +470,75 @@ public class PaulEntity
      */
     @Override
     public ActionResult interactMob(PlayerEntity player, Hand hand) {
-        ItemStack itemStack = player.getStackInHand(hand);
-        Item item = itemStack.getItem();
-        if (this.world.isClient) {
-            boolean bl = this.isOwner(player) || this.isTamed()
-                    || itemStack.isOf(Items.BONE) && !this.isTamed() && !this.hasAngerTime();
-            return bl ? ActionResult.CONSUME : ActionResult.PASS;
-        }
-        if (this.isTamed()) {
-            if (this.isBreedingItem(itemStack) && this.getHealth() < this.getMaxHealth()) {
-                if (!player.getAbilities().creativeMode) {
-                    itemStack.decrement(1);
+        ItemStack heldItem = player.getStackInHand(hand);
+
+        // Hand is not empty and Paul is not busy with a bone        
+        if (!heldItem.isEmpty() && !this.isCarryBone()) {
+            boolean isBone = heldItem.isOf(Items.BONE);
+            boolean isFood = heldItem.isFood();
+
+            if (!isBone) {
+                // Check if we have a bone-tagged item
+                isBone = heldItem.isIn(TagKey.of(Registry.ITEM_KEY, new Identifier("bones")));
+            }
+
+            // ...Maybe its something to eat?
+            if (isFood || isBone) {
+                if (this.world.isClient) {
+                    // Remove the item from players hand on client, nithing more is needed,
+                    // rest is handled server-side
+                    return ActionResult.CONSUME;
                 }
-                this.heal(item.getFoodComponent().getHunger());
-                return ActionResult.SUCCESS;
+
+                // Reduce count in hand
+                heldItem.decrement(1);
+
+                if (isBone) {
+                    // If its a bone, carry it...
+                    this.carryBone(true);
+                } else {
+                    // ... else make eat-noises
+                    this.playSound(SoundEvents.ENTITY_FOX_EAT, this.getSoundVolume(),
+                        (this.random.nextFloat() - this.random.nextFloat()) * 0.2f + 1.0f);
+                }
+
+                // Add a speed and dmg-boost effect after feeding
+                this.addStatusEffect(new StatusEffectInstance(StatusEffects.SPEED, 36000, 0, true, true, false));
+                this.addStatusEffect(new StatusEffectInstance(StatusEffects.STRENGTH, 36000, 0, true, true, false));
+
+                // Some lovely animations
+                if (this.world.isClient) {
+                    for (int i = 0; i < 10; i++) {
+                        this.world.addParticle(i % 5 == 0 ? ParticleTypes.HEART : ParticleTypes.HAPPY_VILLAGER,
+                        this.getPos().x + this.random.nextFloat() - 0.5f,
+                        this.getPos().y + 0.5d + this.random.nextFloat() - 0.5f,
+                        this.getPos().z + this.random.nextFloat() - 0.5f, 0, 0, 0);
+                    }
+                }
+
+                return ActionResult.CONSUME;
             }
-            if (item instanceof DyeItem) {
-                DyeColor dyeColor = ((DyeItem) item).getColor();
-                if (dyeColor == this.getCollarColor())
-                    return super.interactMob(player, hand);
-                this.setCollarColor(dyeColor);
-                if (player.getAbilities().creativeMode)
-                    return ActionResult.SUCCESS;
-                itemStack.decrement(1);
-                return ActionResult.SUCCESS;
-            }
-            ActionResult actionResult = super.interactMob(player, hand);
-            if (actionResult.isAccepted() && !this.isBaby() || !this.isOwner(player))
-                return actionResult;
-            this.setSitting(!this.isSitting());
-            this.jumping = false;
-            this.navigation.stop();
-            this.setTarget(null);
-            return ActionResult.SUCCESS;
-        }
-        if (!itemStack.isOf(Items.BONE) || this.hasAngerTime())
-            return super.interactMob(player, hand);
-        if (!player.getAbilities().creativeMode) {
-            itemStack.decrement(1);
-        }
-        if (this.random.nextInt(3) == 0) {
-            this.setOwner(player);
-            this.navigation.stop();
-            this.setTarget(null);
-            this.setSitting(true);
-            this.world.sendEntityStatus(this, EntityStatuses.ADD_POSITIVE_PLAYER_REACTION_PARTICLES);
-            return ActionResult.SUCCESS;
         } else {
-            this.world.sendEntityStatus(this, EntityStatuses.ADD_NEGATIVE_PLAYER_REACTION_PARTICLES);
+            // Paul is also a mobile ender-chest!
+            EnderChestInventory playerEnderChestInventory = player.getEnderChestInventory();
+
+            // Try to open it up!
+            if (playerEnderChestInventory != null) {
+                // Instantiate the ender-chest ui of interacting player
+                player.openHandledScreen(
+                    new SimpleNamedScreenHandlerFactory(
+                        (syncId, inventory, thisPlayer) -> GenericContainerScreenHandler.createGeneric9x3(syncId, inventory, playerEnderChestInventory),
+                        Text.translatable("Woof! Ender! Woof! Chest!")
+                    )
+                );
+
+                // Stats are important!
+                player.incrementStat(Stats.OPEN_ENDERCHEST);
+                return ActionResult.CONSUME;
+            }
         }
-        return ActionResult.SUCCESS;
+
+        return ActionResult.PASS;
     }
 
     @Override
@@ -523,9 +557,6 @@ public class PaulEntity
     }
 
     public float getTailAngle() {
-        if (this.hasAngerTime()) {
-            return 1.5393804f;
-        }
         if (this.isTamed()) {
             return (0.55f - (this.getMaxHealth() - this.getHealth()) * 0.02f) * (float) Math.PI;
         }
@@ -541,40 +572,6 @@ public class PaulEntity
     @Override
     public int getLimitPerChunk() {
         return 8;
-    }
-
-    @Override
-    public int getAngerTime() {
-        return this.dataTracker.get(ANGER_TIME);
-    }
-
-    @Override
-    public void setAngerTime(int angerTime) {
-        this.dataTracker.set(ANGER_TIME, angerTime);
-    }
-
-    @Override
-    public void chooseRandomAngerTime() {
-        this.setAngerTime(ANGER_TIME_RANGE.get(this.random));
-    }
-
-    @Override
-    @Nullable
-    public UUID getAngryAt() {
-        return this.angryAt;
-    }
-
-    @Override
-    public void setAngryAt(@Nullable UUID angryAt) {
-        this.angryAt = angryAt;
-    }
-
-    public DyeColor getCollarColor() {
-        return DyeColor.byId(this.dataTracker.get(COLLAR_COLOR));
-    }
-
-    public void setCollarColor(DyeColor color) {
-        this.dataTracker.set(COLLAR_COLOR, color.getId());
     }
 
     @Override
@@ -639,30 +636,13 @@ public class PaulEntity
 
     @Override
     public boolean canBeLeashedBy(PlayerEntity player) {
-        return !this.hasAngerTime() && super.canBeLeashedBy(player);
-    }
-
-    @Override
-    public Vec3d getLeashOffset() {
-        return new Vec3d(0.0, 0.6f * this.getStandingEyeHeight(), this.getWidth() * 0.4f);
+        return false;
     }
 
     public static boolean canSpawn(EntityType<PaulEntity> type, WorldAccess world, SpawnReason spawnReason,
             BlockPos pos, Random random) {
         return world.getBlockState(pos.down()).isIn(BlockTags.WOLVES_SPAWNABLE_ON)
                 && PaulEntity.isLightLevelValidForNaturalSpawn(world, pos);
-    }
-
-    class WolfEscapeDangerGoal
-            extends EscapeDangerGoal {
-        public WolfEscapeDangerGoal(double speed) {
-            super(PaulEntity.this, speed);
-        }
-
-        @Override
-        protected boolean isInDanger() {
-            return this.mob.shouldEscapePowderSnow() || this.mob.isOnFire();
-        }
     }
 
     class AvoidLlamaGoal<T extends LivingEntity>

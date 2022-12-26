@@ -18,6 +18,9 @@ public class PaulRenderer extends MobEntityRenderer<PaulEntity, PaulModel<PaulEn
 
     public PaulRenderer(EntityRendererFactory.Context context) {
         super(context, new PaulModel<>(context.getPart(PaulClient.PAUL_MODEL_LAYER)), 0.5f);
+
+        // Apply the bone-in-mouth renderer
+        this.addFeature(new PaulBoneLayerRenderer(this, context.getHeldItemRenderer()));
     }
 
     @Override
