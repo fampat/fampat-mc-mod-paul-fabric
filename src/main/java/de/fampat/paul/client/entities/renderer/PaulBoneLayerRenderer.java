@@ -26,7 +26,8 @@ public class PaulBoneLayerRenderer extends FeatureRenderer<PaulEntity, PaulModel
 
     @Override
     public void render(MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int light,
-            PaulEntity paulEntity, float limbAngle, float limbDistance, float tickDelta, float animationProgress, float headYaw, float headPitch) {
+            PaulEntity paulEntity, float limbAngle, float limbDistance, float tickDelta, float animationProgress,
+            float headYaw, float headPitch) {
         boolean paulIsSleeping = paulEntity.isSleeping();
 
         // If he has no bone, dont render it
@@ -35,19 +36,37 @@ public class PaulBoneLayerRenderer extends FeatureRenderer<PaulEntity, PaulModel
 
         matrixStack.push();
 
-        matrixStack.translate(this.getContextModel().head.pivotX / 16.0f,
-                this.getContextModel().head.pivotY / 16.0f,
-                this.getContextModel().head.pivotZ / 16.0f);
+        // Put the bone in relation to the head
+        matrixStack.translate(
+            this.getContextModel().head.pivotX / 16.0f,
+            this.getContextModel().head.pivotY / 16.0f,
+            this.getContextModel().head.pivotZ / 16.0f
+        );
 
+        // Yaw and pitch the bone when the head does
         matrixStack.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(headYaw));
         matrixStack.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion(headPitch));
 
-        matrixStack.translate(0.06f, 0.27f, -0.5);
-        matrixStack.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion(90.0f));
+        // Offset the bone that it fits the mouth perfectly
+        matrixStack.translate(-0.1F, 0.05F, -0.4F);     
 
+        // Rotate the bone that it alignes with the mouth angle
+        matrixStack.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion(110.0f));
+        matrixStack.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(-45.0f));
+
+        // Create the bone
         ItemStack itemStack = new ItemStack(Items.BONE);
-        this.heldItemRenderer.renderItem(paulEntity, itemStack, ModelTransformation.Mode.GROUND, false, matrixStack,
-                vertexConsumerProvider, light);
+        
+        // Render it onto Pauls model
+        this.heldItemRenderer.renderItem(
+            paulEntity,
+            itemStack,
+            ModelTransformation.Mode.GROUND,
+            false,
+            matrixStack,
+            vertexConsumerProvider, light
+        );
+        
         matrixStack.pop();
     }
 }

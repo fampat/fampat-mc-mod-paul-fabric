@@ -1,7 +1,7 @@
 package de.fampat.paul.client.entities.renderer;
 
-import de.fampat.paul.Mod;
-import de.fampat.paul.client.PaulClient;
+import de.fampat.paul.EntryMain;
+import de.fampat.paul.client.EntryClient;
 import de.fampat.paul.client.entities.models.PaulModel;
 import de.fampat.paul.entities.PaulEntity;
 import net.fabricmc.api.EnvType;
@@ -14,10 +14,10 @@ import net.minecraft.util.Identifier;
 
 @Environment(value=EnvType.CLIENT)
 public class PaulRenderer extends MobEntityRenderer<PaulEntity, PaulModel<PaulEntity>> {
-    private static final Identifier TEXTURE = Mod.id("textures/entities/paul.png");
+    private static final Identifier TEXTURE = EntryMain.id("textures/entities/paul.png");
 
     public PaulRenderer(EntityRendererFactory.Context context) {
-        super(context, new PaulModel<>(context.getPart(PaulClient.PAUL_MODEL_LAYER)), 0.5f);
+        super(context, new PaulModel<>(context.getPart(EntryClient.PAUL_MODEL_LAYER)), 0.5f);
 
         // Apply the bone-in-mouth renderer
         this.addFeature(new PaulBoneLayerRenderer(this, context.getHeldItemRenderer()));

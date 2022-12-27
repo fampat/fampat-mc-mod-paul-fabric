@@ -19,10 +19,10 @@
   "environment": "*",
   "entrypoints": {
     "main": [
-      "de.fampat.paul.Mod"
+      "de.fampat.paul.EntryMain"
     ],
     "client": [
-      "de.fampat.paul.client.PaulClient"
+      "de.fampat.paul.client.EntryClient"
     ]
   },
   "mixins": [

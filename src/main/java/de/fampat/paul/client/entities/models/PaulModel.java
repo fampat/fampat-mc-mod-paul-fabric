@@ -199,17 +199,13 @@ public class PaulModel<T extends PaulEntity> extends TintableAnimalModel<T> {
         this.neck1_r1.pitch = 0.6109F;
         this.neck2_r1.pitch = 0.6109F;
 
-        /*
-         * if (paulEntity.isCarryBone() || paulEntity.eatGrasAnimationTick > 0) {
-         * this.tongue_r1.setPivot(0.0F, 0.5F, -3.4F);
-         * }
-         */
-
         // Tongue animation
-        //if (!paulEntity.isCarryBone()) {
+        if (paulEntity.isCarryBone() || paulEntity.eatGrassTimer > 0) {
+            this.tongue_r1.setPivot(0.0F, 0.5F, -3.4F);
+        } else {
             this.tongue_r1.pitch = 0.35F + (paulEntity.getTongueTick() * ((float) Math.PI / 1800F));
             this.tongue_r1.yaw = paulEntity.getTongueTick() * ((float) Math.PI / 1200F);
-        //}
+        }
 
         // Shake animation
         this.head.roll = paulEntity.getBegAnimationProgress(tickDelta)
@@ -252,16 +248,19 @@ public class PaulModel<T extends PaulEntity> extends TintableAnimalModel<T> {
             this.leg2.pitch = (float) Math.cos(limbAngle * 0.6662F) * 1.4F * limbDistance;
             this.leg3.pitch = (float) Math.cos(limbAngle * 0.6662F + (float) Math.PI) * 1.4F * limbDistance;
             this.tail.yaw = (float) Math.cos(limbAngle * 0.6662F) * 1.4F * limbDistance;
-            this.ear_left_r1.roll = (float) (Math.cos(limbAngle * 0.6662F + (float) Math.PI) * 0.3F * limbDistance) - 0.2F;
+            this.ear_left_r1.roll = (float) (Math.cos(limbAngle * 0.6662F + (float) Math.PI) * 0.3F * limbDistance)
+                    - 0.2F;
             this.ear_right_r1.roll = (float) (Math.cos(limbAngle * 0.6662F) * 0.3F * limbDistance) + 0.2F;
         }
     }
 
-    // Change the head angle to make Paul look "up" when watching the player
+    // Change the head angle to make Paul "look up" when watching the player,
+    // or "look down" when eating grass
     @Override
-    public void setAngles(PaulEntity paulEntity, float limbAngle, float limbDistance, float animationProgress, float headYaw, float headPitch) {
-        this.head.pitch = headPitch * ((float)Math.PI / 270);
-        this.head.yaw = headYaw * ((float)Math.PI / 180);
+    public void setAngles(PaulEntity paulEntity, float limbAngle, float limbDistance, float animationProgress,
+            float headYaw, float headPitch) {
+        this.head.pitch = headPitch * ((float) Math.PI / 270);
+        this.head.yaw = headYaw * ((float) Math.PI / 180);
 
         if (paulEntity.eatGrassTimer > 0) {
             this.head.pitch = this.headAngle;

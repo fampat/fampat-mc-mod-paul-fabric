@@ -73,9 +73,9 @@ import net.minecraft.world.World;
 import net.minecraft.world.WorldAccess;
 import net.minecraft.world.event.GameEvent;
 import org.jetbrains.annotations.Nullable;
-
 import de.fampat.paul.goals.PaulEatGrassGoal;
-import de.fampat.paul.registry.PaulRegistry;
+import de.fampat.paul.networking.PaulBoneClientCaller;
+import de.fampat.paul.registry.ModRegistry;
 
 public class PaulEntity
         extends TameableEntity {
@@ -175,7 +175,7 @@ public class PaulEntity
         }
         
         if (this.random.nextInt(5) == 0) {
-            return PaulRegistry.PAUL_AMBIENT;
+            return ModRegistry.PAUL_AMBIENT;
         } 
         
         return SoundEvents.ENTITY_WOLF_STEP;
@@ -183,7 +183,7 @@ public class PaulEntity
 
     @Override
     protected SoundEvent getHurtSound(DamageSource source) {
-        return PaulRegistry.PAUL_BARK_0;
+        return ModRegistry.PAUL_BARK_0;
     }
 
     @Override
@@ -287,6 +287,7 @@ public class PaulEntity
                 this.playSound(SoundEvents.ENTITY_WOLF_SHAKE, this.getSoundVolume(),
                         (this.random.nextFloat() - this.random.nextFloat()) * 0.2f + 1.0f);
                 this.emitGameEvent(GameEvent.ENTITY_SHAKE);
+                this.carryBone(false);
             }
             this.lastShakeProgress = this.shakeProgress;
             this.shakeProgress += 0.05f;
@@ -355,11 +356,9 @@ public class PaulEntity
             }
 
             // Sync bone status to clients
-            // Make sure its only called on server-side
-/*             if (!level.isClientSide) {
-                NetworkHandler.NETWORK.send(PacketDistributor.ALL.noArg(),
-                        new CPacketSyncPaulCarryBone(this.getId(), shallCarry));
-            } */
+            if (!this.world.isClient()) {
+                PaulBoneClientCaller.callAllClientsWith(this, shallCarry);
+            }
         }
     }
 
@@ -485,6 +484,14 @@ public class PaulEntity
             // ...Maybe its something to eat?
             if (isFood || isBone) {
                 if (this.world.isClient) {
+                    // Some lovely particles
+                    for (int i = 0; i < 10; i++) {
+                        this.world.addParticle(i % 5 == 0 ? ParticleTypes.HEART : ParticleTypes.HAPPY_VILLAGER,
+                        this.getPos().x + this.random.nextFloat() - 0.5f,
+                        this.getPos().y + 0.5d + this.random.nextFloat() - 0.5f,
+                        this.getPos().z + this.random.nextFloat() - 0.5f, 0, 0, 0);
+                    }
+
                     // Remove the item from players hand on client, nithing more is needed,
                     // rest is handled server-side
                     return ActionResult.CONSUME;
@@ -505,16 +512,6 @@ public class PaulEntity
                 // Add a speed and dmg-boost effect after feeding
                 this.addStatusEffect(new StatusEffectInstance(StatusEffects.SPEED, 36000, 0, true, true, false));
                 this.addStatusEffect(new StatusEffectInstance(StatusEffects.STRENGTH, 36000, 0, true, true, false));
-
-                // Some lovely animations
-                if (this.world.isClient) {
-                    for (int i = 0; i < 10; i++) {
-                        this.world.addParticle(i % 5 == 0 ? ParticleTypes.HEART : ParticleTypes.HAPPY_VILLAGER,
-                        this.getPos().x + this.random.nextFloat() - 0.5f,
-                        this.getPos().y + 0.5d + this.random.nextFloat() - 0.5f,
-                        this.getPos().z + this.random.nextFloat() - 0.5f, 0, 0, 0);
-                    }
-                }
 
                 return ActionResult.CONSUME;
             }
@@ -576,7 +573,7 @@ public class PaulEntity
 
     @Override
     public PaulEntity createChild(ServerWorld serverWorld, PassiveEntity passiveEntity) {
-        PaulEntity paulEntityChild = PaulRegistry.PAUL_ENTITY_TYPE.create(world);
+        PaulEntity paulEntityChild = ModRegistry.PAUL_ENTITY_TYPE.create(world);
 
         UUID uUID = this.getOwnerUuid();
         if (uUID != null) {

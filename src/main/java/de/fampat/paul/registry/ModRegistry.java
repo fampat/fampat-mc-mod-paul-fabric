@@ -1,6 +1,6 @@
 package de.fampat.paul.registry;
 
-import de.fampat.paul.Mod;
+import de.fampat.paul.EntryMain;
 import de.fampat.paul.entities.PaulEntity;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityTypeBuilder;
 import net.minecraft.entity.EntityDimensions;
@@ -8,15 +8,15 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.sound.SoundEvent;
 
-public final class PaulRegistry {
-	private PaulRegistry() {
+public final class ModRegistry {
+	private ModRegistry() {
 		throw new UnsupportedOperationException("Instantiate a class only containing static definitions makes now sense, bail.");
 	}
 
 	/* Entities */
 	public static final EntityType<PaulEntity> PAUL_ENTITY_TYPE = Registry.register(
 		Registry.ENTITY_TYPE,
-		Mod.id("paul"),
+		EntryMain.id("paul"),
 		FabricEntityTypeBuilder.<PaulEntity>createMob()
 			.entityFactory(PaulEntity::new)
 			.defaultAttributes(PaulEntity::createPaulAttributes)
@@ -33,11 +33,11 @@ public final class PaulRegistry {
 
     // Sound registerer
 	private static SoundEvent registerSound(String path) {
-		var modId = Mod.id(path);
+		var modId = EntryMain.id(path);
 		return Registry.register(Registry.SOUND_EVENT, modId, new SoundEvent(modId));
 	}
 
 	public static void init() {
-		Mod.LOGGER.info("PAUL: Woof world! iam now registered, woof!");
+		EntryMain.LOGGER.info("PAUL: Woof world! iam now registered, woof!");
 	}
 }
