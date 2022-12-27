@@ -2,6 +2,7 @@ package de.fampat.paul.registry;
 
 import de.fampat.paul.EntryMain;
 import de.fampat.paul.entities.PaulEntity;
+import de.fampat.paul.networking.PaulSpawnServerListener;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityTypeBuilder;
 import net.minecraft.entity.EntityDimensions;
 import net.minecraft.entity.EntityType;
@@ -13,8 +14,8 @@ public final class ModRegistry {
 		throw new UnsupportedOperationException("Instantiate a class only containing static definitions makes now sense, bail.");
 	}
 
-	/* Entities */
-	public static final EntityType<PaulEntity> PAUL_ENTITY_TYPE = Registry.register(
+    // Register Paul entity
+    public static final EntityType<PaulEntity> PAUL_ENTITY_TYPE = Registry.register(
 		Registry.ENTITY_TYPE,
 		EntryMain.id("paul"),
 		FabricEntityTypeBuilder.<PaulEntity>createMob()
@@ -24,14 +25,13 @@ public final class ModRegistry {
 			.build()
 	);
 
-	/* Sounds */
+	// Register Paul sounds
 	public static final SoundEvent PAUL_AMBIENT = registerSound("paul.ambient");
 	public static final SoundEvent PAUL_BARK_0 = registerSound("paul.bark.0");
 	public static final SoundEvent PAUL_BARK_1 = registerSound("paul.bark.1");
 	public static final SoundEvent PAUL_BARK_2 = registerSound("paul.bark.2");
 	public static final SoundEvent PAUL_WALK_0 = registerSound("paul.walk.0");
 
-    // Sound registerer
 	private static SoundEvent registerSound(String path) {
 		var modId = EntryMain.id(path);
 		return Registry.register(Registry.SOUND_EVENT, modId, new SoundEvent(modId));
@@ -39,5 +39,8 @@ public final class ModRegistry {
 
 	public static void init() {
 		EntryMain.LOGGER.info("PAUL: Woof world! iam now registered, woof!");
+
+        // Initialize the listener that spawns Paul on the server
+        PaulSpawnServerListener.register();
 	}
 }

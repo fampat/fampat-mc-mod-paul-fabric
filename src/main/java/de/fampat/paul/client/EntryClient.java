@@ -3,6 +3,7 @@ package de.fampat.paul.client;
 import de.fampat.paul.EntryMain;
 import de.fampat.paul.client.entities.models.PaulModel;
 import de.fampat.paul.client.entities.renderer.PaulRenderer;
+import de.fampat.paul.client.events.KeyStroke;
 import de.fampat.paul.client.networking.PaulBoneClientListener;
 import de.fampat.paul.registry.ModRegistry;
 import net.fabricmc.api.ClientModInitializer;
@@ -25,5 +26,8 @@ public class EntryClient implements ClientModInitializer {
 
         // Initialize the listener that renders Pauls bone on all clients
         PaulBoneClientListener.register();
+
+        // Initialize the key-event listeners
+        KeyStroke.registerPaulComeHere();
 	}
 }

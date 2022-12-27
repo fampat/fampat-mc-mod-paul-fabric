@@ -6,7 +6,7 @@
   "mixins": [
   ],
   "client": [
-    "ClientTitleScreenMixin"
+    "EntityModPersistentDataMixin"
   ],
   "injectors": {
     "defaultRequire": 1
