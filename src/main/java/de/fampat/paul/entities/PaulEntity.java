@@ -65,7 +65,9 @@ import net.minecraft.world.WorldAccess;
 import net.minecraft.world.event.GameEvent;
 import org.jetbrains.annotations.Nullable;
 import de.fampat.paul.goals.PaulEatGrassGoal;
+import de.fampat.paul.interfaces.IEntityModPersistentData;
 import de.fampat.paul.networking.PaulBoneClientCaller;
+import de.fampat.paul.networking.PaulSpawnServerListener;
 import de.fampat.paul.registry.ModRegistry;
 
 public class PaulEntity extends TameableEntity {
@@ -301,6 +303,13 @@ public class PaulEntity extends TameableEntity {
         this.lastShakeProgress = 0.0f;
     }
 
+    private void removeFromOwner() {
+        NbtCompound playerModPersistentData = ((IEntityModPersistentData) this.getOwner()).getModPersistentData();
+        if (playerModPersistentData.contains(PaulSpawnServerListener.paulUUIDName)) {
+            playerModPersistentData.remove(PaulSpawnServerListener.paulUUIDName);
+        }
+    }
+
     @Override
     public void onDeath(DamageSource damageSource) {
         this.furWet = false;
@@ -311,7 +320,14 @@ public class PaulEntity extends TameableEntity {
         this.tongueTick = 0;
         this.lastShakeProgress = 0.0f;
         this.shakeProgress = 0.0f;
+        this.removeFromOwner();
         super.onDeath(damageSource);
+    }
+
+    @Override
+    public void onRemoved() {
+        this.removeFromOwner();
+        super.onRemoved();
     }
 
     private void handleBoneCarryTick() {

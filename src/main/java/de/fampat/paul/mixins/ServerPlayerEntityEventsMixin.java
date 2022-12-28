@@ -40,7 +40,7 @@ abstract class ServerPlayerEntityEventsMixin {
 
         // Fetch the target class instance
         ServerPlayerEntity serverPlayer = (ServerPlayerEntity) (Object) this;
-        
+
         PaulSpawnServerListener.despawnPaul(serverPlayer, null);
     }
 }

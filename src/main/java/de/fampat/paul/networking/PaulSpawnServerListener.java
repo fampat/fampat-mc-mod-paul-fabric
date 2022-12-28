@@ -38,7 +38,6 @@ public class PaulSpawnServerListener {
                     spawnPaul(player, playerModPersistentData);
                 } else {
                     EntryMain.LOGGER.info("Pauls UUID is already set, despawning Paul...");
-                    player.sendMessage(Text.translatable("paul_leave.text.paul.fampat.de"), false);
                     despawnPaul(player, playerModPersistentData);
                 }
             });
@@ -62,7 +61,7 @@ public class PaulSpawnServerListener {
         playerModPersistentData.putUuid(paulUUIDName, paulEntity.getUuid());
 
         // Position Paul to player and spawn him
-        paulEntity.setPos(player.getPos().x, player.getPos().y + 0.1D, player.getPos().z);
+        paulEntity.setPos(player.getPos().x, player.getPos().y + 0.08D, player.getPos().z);
         serverWorld.spawnEntity(paulEntity);
 
         // Generate spawn particles for each client watching Paul spawning
@@ -91,8 +90,11 @@ public class PaulSpawnServerListener {
 
                 // Despawn Paul
                 paulEntity.remove(RemovalReason.DISCARDED);
+
+                // Despawn message to player
+                serverPlayer.sendMessage(Text.translatable("paul_despawned.text.paul.fampat.de"), false);
             } else {
-                EntryMain.LOGGER.info("Paul is null, this should not happen, world where it happenewdd: " + serverWorld.getDimension().toString());
+                EntryMain.LOGGER.info("Paul is null, this should not happen, world where it happened: " + serverWorld.getDimension().toString());
             }
 
             // Remove the UUID from the player

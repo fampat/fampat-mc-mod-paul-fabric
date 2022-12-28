@@ -1,5 +1,7 @@
 {
-	"entity.paul.paul_entity" : "Paul", 
-	"container.paul.paul_container" : "Pauls Inventory",
-	"config.paul.owner" : "Player name who own Paul, the only player who can call Paul."
+    "paul_enderchest_title.text.paul.fampat.de" : "Woof! Ender! Chest! Woof!",
+    "paul_come_here.text.paul.fampat.de" : "Paul come here!",
+    "paul_sit.text.paul.fampat.de" : "Paul sit!",
+    "paul_unsit.text.paul.fampat.de" : "Paul stand up!",
+    "paul_despawned.text.paul.fampat.de" : "Paul where are you?"
 }
