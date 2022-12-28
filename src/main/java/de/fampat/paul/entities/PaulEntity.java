@@ -100,7 +100,6 @@ public class PaulEntity extends TameableEntity {
         this.setTamed(true);
         this.setPathfindingPenalty(PathNodeType.POWDER_SNOW, -1.0f);
         this.setPathfindingPenalty(PathNodeType.DANGER_POWDER_SNOW, -1.0f);
-
         this.tongueTick = 1;
         this.tongueTickForward = true;
     }
@@ -185,6 +184,12 @@ public class PaulEntity extends TameableEntity {
         return this.tongueTick;
     }
 
+    @Override
+    public boolean isPushedByFluids() {
+        // Stronk Paul does not get pushed!
+        return false;
+    }
+    
     @Environment(value = EnvType.CLIENT)
     public float getNeckAngle(float delta) {
         if (this.eatGrassTimer <= 0) {
