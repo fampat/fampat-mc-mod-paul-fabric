@@ -1,5 +1,7 @@
 package de.fampat.paul.networking;
 
+import org.jetbrains.annotations.Nullable;
+
 import de.fampat.paul.EntryMain;
 import de.fampat.paul.entities.PaulEntity;
 import de.fampat.paul.interfaces.IEntityModPersistentData;
@@ -19,34 +21,34 @@ public class PaulSpawnServerListener {
     public static void register() {
         ServerPlayNetworking.registerGlobalReceiver(EntryMain.C2S_NETWORK_PACKET_ID_PAUL_SPAWN, (server, player, handler, buf, responseSender) -> {
             server.execute(() -> {
-                EntryMain.LOGGER.info("Paul: Spawning or despawning Paul!");
+                EntryMain.LOGGER.info("Spawning or despawning Paul!");
 
                 // Only specific players are allowed to call Paul
                 if (!player.getName().equals(Text.literal("Devpat")) && !player.getName().equals(Text.literal("StyPat"))) {
                     return;
                 }
 
-                // Server world, thats where we are right now
-                ServerWorld serverWorld = player.getWorld();
-
                 // Get the players modded persistent data
                 NbtCompound playerModPersistentData = ((IEntityModPersistentData) player).getModPersistentData();
 
                 // Check if the player already has called Paul before
                 if (!playerModPersistentData.contains(paulUUIDName)) {
-                    EntryMain.LOGGER.info("Paul: Pauls UUID is not yet set, spawning Paul now...");
+                    EntryMain.LOGGER.info("Pauls UUID is not yet set, spawning Paul now...");
                     player.sendMessage(Text.translatable("paul_come_here.text.paul.fampat.de"), false);
-                    spawnPaul(player, serverWorld, playerModPersistentData);
+                    spawnPaul(player, playerModPersistentData);
                 } else {
-                    EntryMain.LOGGER.info("Paul: Pauls UUID is already set, despawning Paul...");
+                    EntryMain.LOGGER.info("Pauls UUID is already set, despawning Paul...");
                     player.sendMessage(Text.translatable("paul_leave.text.paul.fampat.de"), false);
-                    despawnPaul(serverWorld, playerModPersistentData);
+                    despawnPaul(player, playerModPersistentData);
                 }
             });
         });
     }
 
-    private static void spawnPaul(ServerPlayerEntity player, ServerWorld serverWorld, NbtCompound playerModPersistentData) {
+    private static void spawnPaul(ServerPlayerEntity player, NbtCompound playerModPersistentData) {
+        // Server world, thats where we are right now
+        ServerWorld serverWorld = player.getWorld();
+
         // New Paul instance with new owner
         PaulEntity paulEntity = new PaulEntity(ModRegistry.PAUL_ENTITY_TYPE, serverWorld);
         
@@ -60,7 +62,7 @@ public class PaulSpawnServerListener {
         playerModPersistentData.putUuid(paulUUIDName, paulEntity.getUuid());
 
         // Position Paul to player and spawn him
-        paulEntity.setPos(player.getPos().x, player.getPos().y, player.getPos().z);
+        paulEntity.setPos(player.getPos().x, player.getPos().y + 0.1D, player.getPos().z);
         serverWorld.spawnEntity(paulEntity);
 
         // Generate spawn particles for each client watching Paul spawning
@@ -70,20 +72,34 @@ public class PaulSpawnServerListener {
         }
     }
 
-    private static void despawnPaul(ServerWorld serverWorld, NbtCompound playerModPersistentData) {
-        PaulEntity paulEntity = (PaulEntity) serverWorld.getEntity(playerModPersistentData.getUuid(paulUUIDName));
-
-        if (paulEntity != null) {
-            // Generate despawn particles for each client watching Paul despawning
-            for (ServerPlayerEntity watchingPlayer : PlayerLookup.tracking(paulEntity)) {
-                serverWorld.spawnParticles(watchingPlayer, ParticleTypes.ANGRY_VILLAGER, false,  paulEntity.getPos().x, paulEntity.getPos().y + 0.5D, paulEntity.getPos().z, 6, 0, 0, 0, 0);
-            }
-
-            // Despawn Paul
-            paulEntity.remove(RemovalReason.DISCARDED);
+    public static void despawnPaul(ServerPlayerEntity serverPlayer, @Nullable NbtCompound playerModPersistentData) {
+        if (playerModPersistentData == null) {
+            // Get the players modded persistent data
+            playerModPersistentData = ((IEntityModPersistentData) serverPlayer).getModPersistentData();
         }
 
-        // Remove the UUID from the player
-        playerModPersistentData.remove(paulUUIDName);
+        // Check if the player has called Paul
+        if (playerModPersistentData.contains(PaulSpawnServerListener.paulUUIDName)) {
+            ServerWorld serverWorld = serverPlayer.getWorld();
+            PaulEntity paulEntity = (PaulEntity) serverWorld.getEntity(playerModPersistentData.getUuid(paulUUIDName));
+
+            if (paulEntity != null) {
+                // Generate despawn particles for each client watching Paul despawning
+                for (ServerPlayerEntity watchingPlayer : PlayerLookup.tracking(paulEntity)) {
+                    serverWorld.spawnParticles(watchingPlayer, ParticleTypes.ANGRY_VILLAGER, false,  paulEntity.getPos().x, paulEntity.getPos().y + 0.5D, paulEntity.getPos().z, 6, 0, 0, 0, 0);
+                }
+
+                // Despawn Paul
+                paulEntity.remove(RemovalReason.DISCARDED);
+            } else {
+                EntryMain.LOGGER.info("Paul is null, this should not happen, world where it happenewdd: " + serverWorld.getDimension().toString());
+            }
+
+            // Remove the UUID from the player
+            playerModPersistentData.remove(paulUUIDName);
+
+            // Log an despawning message
+            EntryMain.LOGGER.info("Despawned Paul due to request");
+        }
     }
 }

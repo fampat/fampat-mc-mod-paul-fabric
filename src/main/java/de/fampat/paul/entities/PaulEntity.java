@@ -125,12 +125,12 @@ public class PaulEntity extends TameableEntity {
     public static DefaultAttributeContainer.Builder createPaulAttributes() {
         return MobEntity
                 .createMobAttributes()
-                .add(EntityAttributes.GENERIC_FOLLOW_RANGE, 48.0D)
-                .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.4D)
-                .add(EntityAttributes.GENERIC_MAX_HEALTH, 20.0D)
-                .add(EntityAttributes.GENERIC_KNOCKBACK_RESISTANCE, 0.5D)
-                .add(EntityAttributes.GENERIC_ATTACK_SPEED, 1.1D)
-                .add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 8.0D);
+                .add(EntityAttributes.GENERIC_FOLLOW_RANGE, 48.0)
+                .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.4)
+                .add(EntityAttributes.GENERIC_MAX_HEALTH, 20.0)
+                .add(EntityAttributes.GENERIC_KNOCKBACK_RESISTANCE, 0.5)
+                .add(EntityAttributes.GENERIC_ATTACK_SPEED, 1.1)
+                .add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 8.0);
     }
 
     @Override
@@ -483,8 +483,8 @@ public class PaulEntity extends TameableEntity {
                 }
 
                 // Add a speed and dmg-boost effect after feeding
-                this.addStatusEffect(new StatusEffectInstance(StatusEffects.SPEED, 36000, 2, true, true, false));
-                this.addStatusEffect(new StatusEffectInstance(StatusEffects.STRENGTH, 36000, 2, true, true, false));
+                this.addStatusEffect(new StatusEffectInstance(StatusEffects.SPEED, 36000, 0, true, true, false));
+                this.addStatusEffect(new StatusEffectInstance(StatusEffects.STRENGTH, 36000, 0, true, true, false));
 
                 return ActionResult.CONSUME;
             }

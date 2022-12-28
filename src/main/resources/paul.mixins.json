@@ -4,9 +4,11 @@
   "package": "de.fampat.paul.mixins",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
+    "EntityModPersistentDataMixin",
+    "ServerPlayerEntityEventsMixin",
+    "ServerPlayNetworkHandlerEventsMixin"
   ],
   "client": [
-    "EntityModPersistentDataMixin"
   ],
   "injectors": {
     "defaultRequire": 1

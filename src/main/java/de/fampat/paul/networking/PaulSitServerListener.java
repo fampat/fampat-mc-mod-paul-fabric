@@ -14,7 +14,7 @@ public class PaulSitServerListener {
     public static void register() {
         ServerPlayNetworking.registerGlobalReceiver(EntryMain.C2S_NETWORK_PACKET_ID_PAUL_SIT, (server, player, handler, buf, responseSender) -> {
             server.execute(() -> {
-                EntryMain.LOGGER.info("Paul: Sit or unsit Paul!");
+                EntryMain.LOGGER.info("Sit or unsit Paul!");
 
                 // Only specific players are allowed to call Paul
                 if (!player.getName().equals(Text.literal("Devpat")) && !player.getName().equals(Text.literal("StyPat"))) {
@@ -29,7 +29,7 @@ public class PaulSitServerListener {
 
                 // Check if the player already has called Paul before
                 if (!playerModPersistentData.contains(paulUUIDName)) {
-                    EntryMain.LOGGER.info("Paul: Pauls UUID is not yet set, cannot order sit or unsit command...");
+                    EntryMain.LOGGER.info("Pauls UUID is not yet set, cannot order sit or unsit command...");
                 } else {
                     // Load Paul from players persistent storage by using the Pauls uuid
                     PaulEntity paulEntity = (PaulEntity) serverWorld.getEntity(playerModPersistentData.getUuid(paulUUIDName));
