@@ -28,6 +28,7 @@ public class EntryClient implements ClientModInitializer {
         PaulBoneClientListener.register();
 
         // Initialize the key-event listeners
-        KeyStroke.registerPaulComeHere();
+        KeyStroke.registerPaulSpawnToggle();
+        KeyStroke.registerPaulSitToggle();
 	}
 }

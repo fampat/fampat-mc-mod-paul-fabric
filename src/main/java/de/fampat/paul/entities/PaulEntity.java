@@ -1,7 +1,6 @@
 package de.fampat.paul.entities;
 
 import java.util.UUID;
-import java.util.function.Predicate;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.block.BlockState;
@@ -14,7 +13,6 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.ai.goal.ActiveTargetGoal;
 import net.minecraft.entity.ai.goal.AttackWithOwnerGoal;
-import net.minecraft.entity.ai.goal.FleeEntityGoal;
 import net.minecraft.entity.ai.goal.FollowOwnerGoal;
 import net.minecraft.entity.ai.goal.LookAroundGoal;
 import net.minecraft.entity.ai.goal.LookAtEntityGoal;
@@ -24,7 +22,6 @@ import net.minecraft.entity.ai.goal.RevengeGoal;
 import net.minecraft.entity.ai.goal.SitGoal;
 import net.minecraft.entity.ai.goal.SwimGoal;
 import net.minecraft.entity.ai.goal.TrackOwnerAttackerGoal;
-import net.minecraft.entity.ai.goal.UntamedActiveTargetGoal;
 import net.minecraft.entity.ai.goal.WanderAroundFarGoal;
 import net.minecraft.entity.ai.pathing.PathNodeType;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
@@ -36,18 +33,13 @@ import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.AbstractSkeletonEntity;
-import net.minecraft.entity.mob.CreeperEntity;
-import net.minecraft.entity.mob.GhastEntity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.passive.AbstractHorseEntity;
 import net.minecraft.entity.passive.AnimalEntity;
-import net.minecraft.entity.passive.LlamaEntity;
 import net.minecraft.entity.passive.PassiveEntity;
 import net.minecraft.entity.passive.TameableEntity;
-import net.minecraft.entity.passive.TurtleEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.EnderChestInventory;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
@@ -58,7 +50,6 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.stat.Stats;
-import net.minecraft.tag.BlockTags;
 import net.minecraft.tag.TagKey;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
@@ -77,15 +68,9 @@ import de.fampat.paul.goals.PaulEatGrassGoal;
 import de.fampat.paul.networking.PaulBoneClientCaller;
 import de.fampat.paul.registry.ModRegistry;
 
-public class PaulEntity
-        extends TameableEntity {
+public class PaulEntity extends TameableEntity {
     private static final TrackedData<Boolean> BEGGING = DataTracker.registerData(PaulEntity.class,
             TrackedDataHandlerRegistry.BOOLEAN);
-
-    public static final Predicate<LivingEntity> FOLLOW_TAMED_PREDICATE = entity -> {
-        EntityType<?> entityType = entity.getType();
-        return entityType == EntityType.SHEEP || entityType == EntityType.RABBIT || entityType == EntityType.FOX;
-    };
 
     private float begAnimationProgress;
     private float lastBegAnimationProgress;
@@ -109,7 +94,8 @@ public class PaulEntity
 
     public PaulEntity(EntityType<? extends PaulEntity> entityType, World world) {
         super((EntityType<? extends TameableEntity>) entityType, world);
-        this.setTamed(false);
+
+        this.setTamed(true);
         this.setPathfindingPenalty(PathNodeType.POWDER_SNOW, -1.0f);
         this.setPathfindingPenalty(PathNodeType.DANGER_POWDER_SNOW, -1.0f);
 
@@ -131,18 +117,20 @@ public class PaulEntity
         this.targetSelector.add(1, new TrackOwnerAttackerGoal(this));
         this.targetSelector.add(2, new AttackWithOwnerGoal(this));
         this.targetSelector.add(3, new RevengeGoal(this, new Class[0]).setGroupRevenge(new Class[0]));
-        this.targetSelector.add(5,
-                new UntamedActiveTargetGoal<AnimalEntity>(this, AnimalEntity.class, false, FOLLOW_TAMED_PREDICATE));
-        this.targetSelector.add(6, new UntamedActiveTargetGoal<TurtleEntity>(this, TurtleEntity.class, false,
-                TurtleEntity.BABY_TURTLE_ON_LAND_FILTER));
         this.targetSelector.add(7,
                 new ActiveTargetGoal<AbstractSkeletonEntity>((MobEntity) this, AbstractSkeletonEntity.class, false));
         this.goalSelector.add(120, this.eatGrassGoal);
     }
 
     public static DefaultAttributeContainer.Builder createPaulAttributes() {
-        return MobEntity.createMobAttributes().add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.3f)
-                .add(EntityAttributes.GENERIC_MAX_HEALTH, 20.0).add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 2.0);
+        return MobEntity
+                .createMobAttributes()
+                .add(EntityAttributes.GENERIC_FOLLOW_RANGE, 48.0D)
+                .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.4D)
+                .add(EntityAttributes.GENERIC_MAX_HEALTH, 20.0D)
+                .add(EntityAttributes.GENERIC_KNOCKBACK_RESISTANCE, 0.5D)
+                .add(EntityAttributes.GENERIC_ATTACK_SPEED, 1.1D)
+                .add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 8.0D);
     }
 
     @Override
@@ -167,17 +155,11 @@ public class PaulEntity
     }
 
     @Override
-    protected SoundEvent getAmbientSound() {       
-        if (this.random.nextInt(3) == 0) {
-            if (this.isTamed() && this.getHealth() < 10.0f) {
-                return SoundEvents.ENTITY_WOLF_WHINE;
-            }
-        }
-        
+    protected SoundEvent getAmbientSound() {
         if (this.random.nextInt(5) == 0) {
             return ModRegistry.PAUL_AMBIENT;
-        } 
-        
+        }
+
         return SoundEvents.ENTITY_WOLF_STEP;
     }
 
@@ -210,21 +192,21 @@ public class PaulEntity
             return 1.0f;
         }
         if (this.eatGrassTimer < 4) {
-            return ((float)this.eatGrassTimer - delta) / 4.0f;
+            return ((float) this.eatGrassTimer - delta) / 4.0f;
         }
-        return -((float)(this.eatGrassTimer - 40) - delta) / 4.0f;
+        return -((float) (this.eatGrassTimer - 40) - delta) / 4.0f;
     }
 
     @Environment(value = EnvType.CLIENT)
     public float getHeadAngle(float delta) {
         if (this.eatGrassTimer > 4 && this.eatGrassTimer <= 36) {
-            float f = ((float)(this.eatGrassTimer - 4) - delta) / 32.0f;
+            float f = ((float) (this.eatGrassTimer - 4) - delta) / 32.0f;
             return 0.62831855f + 0.21991149f * MathHelper.sin(f * 28.7f);
         }
         if (this.eatGrassTimer > 0) {
             return 0.62831855f;
         }
-        return this.getPitch() * ((float)Math.PI / 180);
+        return this.getPitch() * ((float) Math.PI / 180);
     }
 
     @Override
@@ -233,7 +215,7 @@ public class PaulEntity
         if (this.world.isClient) {
             this.eatGrassTimer = Math.max(0, this.eatGrassTimer - 1);
         }
-        
+
         if (!this.world.isClient && this.furWet && !this.canShakeWaterOff && !this.isNavigating() && this.onGround) {
             this.canShakeWaterOff = true;
             this.shakeProgress = 0.0f;
@@ -323,11 +305,14 @@ public class PaulEntity
     public void onDeath(DamageSource damageSource) {
         this.furWet = false;
         this.canShakeWaterOff = false;
+        this.carryBone = false;
+        this.carryBoneTimer = 0;
+        this.eatGrassTimer = 0;
+        this.tongueTick = 0;
         this.lastShakeProgress = 0.0f;
         this.shakeProgress = 0.0f;
         super.onDeath(damageSource);
     }
-
 
     private void handleBoneCarryTick() {
         // No bone "lives" forever
@@ -451,18 +436,6 @@ public class PaulEntity
         return bl;
     }
 
-    @Override
-    public void setTamed(boolean tamed) {
-        super.setTamed(tamed);
-        if (tamed) {
-            this.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(20.0);
-            this.setHealth(20.0f);
-        } else {
-            this.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(8.0);
-        }
-        this.getAttributeInstance(EntityAttributes.GENERIC_ATTACK_DAMAGE).setBaseValue(4.0);
-    }
-
     /*
      * Enabled force condition propagation
      * Lifted jumps to return sites
@@ -471,7 +444,7 @@ public class PaulEntity
     public ActionResult interactMob(PlayerEntity player, Hand hand) {
         ItemStack heldItem = player.getStackInHand(hand);
 
-        // Hand is not empty and Paul is not busy with a bone        
+        // Hand is not empty and Paul is not busy with a bone
         if (!heldItem.isEmpty() && !this.isCarryBone()) {
             boolean isBone = heldItem.isOf(Items.BONE);
             boolean isFood = heldItem.isFood();
@@ -487,9 +460,9 @@ public class PaulEntity
                     // Some lovely particles
                     for (int i = 0; i < 10; i++) {
                         this.world.addParticle(i % 5 == 0 ? ParticleTypes.HEART : ParticleTypes.HAPPY_VILLAGER,
-                        this.getPos().x + this.random.nextFloat() - 0.5f,
-                        this.getPos().y + 0.5d + this.random.nextFloat() - 0.5f,
-                        this.getPos().z + this.random.nextFloat() - 0.5f, 0, 0, 0);
+                                this.getPos().x + this.random.nextFloat() - 0.5f,
+                                this.getPos().y + 0.5d + this.random.nextFloat() - 0.5f,
+                                this.getPos().z + this.random.nextFloat() - 0.5f, 0, 0, 0);
                     }
 
                     // Remove the item from players hand on client, nithing more is needed,
@@ -506,12 +479,12 @@ public class PaulEntity
                 } else {
                     // ... else make eat-noises
                     this.playSound(SoundEvents.ENTITY_FOX_EAT, this.getSoundVolume(),
-                        (this.random.nextFloat() - this.random.nextFloat()) * 0.2f + 1.0f);
+                            (this.random.nextFloat() - this.random.nextFloat()) * 0.2f + 1.0f);
                 }
 
                 // Add a speed and dmg-boost effect after feeding
-                this.addStatusEffect(new StatusEffectInstance(StatusEffects.SPEED, 36000, 0, true, true, false));
-                this.addStatusEffect(new StatusEffectInstance(StatusEffects.STRENGTH, 36000, 0, true, true, false));
+                this.addStatusEffect(new StatusEffectInstance(StatusEffects.SPEED, 36000, 2, true, true, false));
+                this.addStatusEffect(new StatusEffectInstance(StatusEffects.STRENGTH, 36000, 2, true, true, false));
 
                 return ActionResult.CONSUME;
             }
@@ -523,11 +496,10 @@ public class PaulEntity
             if (playerEnderChestInventory != null) {
                 // Instantiate the ender-chest ui of interacting player
                 player.openHandledScreen(
-                    new SimpleNamedScreenHandlerFactory(
-                        (syncId, inventory, thisPlayer) -> GenericContainerScreenHandler.createGeneric9x3(syncId, inventory, playerEnderChestInventory),
-                        Text.translatable("Woof! Ender! Woof! Chest!")
-                    )
-                );
+                        new SimpleNamedScreenHandlerFactory(
+                                (syncId, inventory, thisPlayer) -> GenericContainerScreenHandler
+                                        .createGeneric9x3(syncId, inventory, playerEnderChestInventory),
+                                Text.translatable("paul_enderchest_title.text.paul.fampat.de")));
 
                 // Stats are important!
                 player.incrementStat(Stats.OPEN_ENDERCHEST);
@@ -553,34 +525,9 @@ public class PaulEntity
         }
     }
 
-    public float getTailAngle() {
-        if (this.isTamed()) {
-            return (0.55f - (this.getMaxHealth() - this.getHealth()) * 0.02f) * (float) Math.PI;
-        }
-        return 0.62831855f;
-    }
-
-    @Override
-    public boolean isBreedingItem(ItemStack stack) {
-        Item item = stack.getItem();
-        return item.isFood() && item.getFoodComponent().isMeat();
-    }
-
     @Override
     public int getLimitPerChunk() {
-        return 8;
-    }
-
-    @Override
-    public PaulEntity createChild(ServerWorld serverWorld, PassiveEntity passiveEntity) {
-        PaulEntity paulEntityChild = ModRegistry.PAUL_ENTITY_TYPE.create(world);
-
-        UUID uUID = this.getOwnerUuid();
-        if (uUID != null) {
-            paulEntityChild.setOwnerUuid(uUID);
-            paulEntityChild.setTamed(true);
-        }
-        return paulEntityChild;
+        return 1;
     }
 
     public void setBegging(boolean begging) {
@@ -589,23 +536,7 @@ public class PaulEntity
 
     @Override
     public boolean canBreedWith(AnimalEntity other) {
-        if (other == this) {
-            return false;
-        }
-        if (!this.isTamed()) {
-            return false;
-        }
-        if (!(other instanceof PaulEntity)) {
-            return false;
-        }
-        PaulEntity paulEntity = (PaulEntity) other;
-        if (!paulEntity.isTamed()) {
-            return false;
-        }
-        if (paulEntity.isInSittingPose()) {
-            return false;
-        }
-        return this.isInLove() && paulEntity.isInLove();
+        return false;
     }
 
     public boolean isBegging() {
@@ -614,13 +545,6 @@ public class PaulEntity
 
     @Override
     public boolean canAttackWithOwner(LivingEntity target, LivingEntity owner) {
-        if (target instanceof CreeperEntity || target instanceof GhastEntity) {
-            return false;
-        }
-        if (target instanceof PaulEntity) {
-            PaulEntity paulEntity = (PaulEntity) target;
-            return !paulEntity.isTamed() || paulEntity.getOwner() != owner;
-        }
         if (target instanceof PlayerEntity && owner instanceof PlayerEntity
                 && !((PlayerEntity) owner).shouldDamagePlayer((PlayerEntity) target)) {
             return false;
@@ -636,44 +560,12 @@ public class PaulEntity
         return false;
     }
 
-    public static boolean canSpawn(EntityType<PaulEntity> type, WorldAccess world, SpawnReason spawnReason,
-            BlockPos pos, Random random) {
-        return world.getBlockState(pos.down()).isIn(BlockTags.WOLVES_SPAWNABLE_ON)
-                && PaulEntity.isLightLevelValidForNaturalSpawn(world, pos);
+    @Override
+    public PassiveEntity createChild(ServerWorld serverWorld, PassiveEntity passiveEntity) {
+        return null;
     }
 
-    class AvoidLlamaGoal<T extends LivingEntity>
-            extends FleeEntityGoal<T> {
-        private final PaulEntity paul;
-
-        public AvoidLlamaGoal(PaulEntity paul, Class<T> fleeFromType, float distance, double slowSpeed,
-                double fastSpeed) {
-            super(paul, fleeFromType, distance, slowSpeed, fastSpeed);
-            this.paul = paul;
-        }
-
-        @Override
-        public boolean canStart() {
-            if (super.canStart() && this.targetEntity instanceof LlamaEntity) {
-                return !this.paul.isTamed() && this.isScaredOf((LlamaEntity) this.targetEntity);
-            }
-            return false;
-        }
-
-        private boolean isScaredOf(LlamaEntity llama) {
-            return llama.getStrength() >= PaulEntity.this.random.nextInt(5);
-        }
-
-        @Override
-        public void start() {
-            PaulEntity.this.setTarget(null);
-            super.start();
-        }
-
-        @Override
-        public void tick() {
-            PaulEntity.this.setTarget(null);
-            super.tick();
-        }
+    public static boolean canSpawn(EntityType<PaulEntity> type, WorldAccess world, SpawnReason spawnReason, BlockPos pos, Random random) {
+        return false;
     }
 }

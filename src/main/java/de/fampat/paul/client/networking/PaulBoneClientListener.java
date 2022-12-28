@@ -14,7 +14,7 @@ public class PaulBoneClientListener {
 
             // Everything in this lambda is run on the render thread
             client.execute(() -> {                
-                if (paulEntityId > 0) {
+                if (paulEntityId != null && paulEntityId > 0) {
                     // Load Paul...
                     PaulEntity paulEntity = (PaulEntity) client.world.getEntityById(paulEntityId);
 

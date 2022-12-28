@@ -24,11 +24,6 @@ public class PaulRenderer extends MobEntityRenderer<PaulEntity, PaulModel<PaulEn
     }
 
     @Override
-    protected float getAnimationProgress(PaulEntity paulEntity, float f) {
-        return paulEntity.getTailAngle();
-    }
-
-    @Override
     public void render(PaulEntity paulEntity, float f, float g, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i) {
         if (paulEntity.isFurWet()) {
             float h = paulEntity.getFurWetBrightnessMultiplier(g);

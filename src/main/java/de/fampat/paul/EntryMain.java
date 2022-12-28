@@ -10,6 +10,8 @@ public class EntryMain implements ModInitializer {
 	public static final String NAMESPACE = "paul";
 	public static final Logger LOGGER = LoggerFactory.getLogger("paul");
 
+    public static final Identifier S2C_NETWORK_PACKET_ID_PAUL_SIT = id("s2c_network_packet_id_paul_sit");
+    public static final Identifier C2S_NETWORK_PACKET_ID_PAUL_SIT = id("c2s_network_packet_id_paul_sit");
     public static final Identifier S2C_NETWORK_PACKET_ID_PAUL_BONE = id("s2c_network_packet_id_paul_bone");
     public static final Identifier C2S_NETWORK_PACKET_ID_PAUL_SPAWN = id("c2s_network_packet_id_paul_spawn");
 

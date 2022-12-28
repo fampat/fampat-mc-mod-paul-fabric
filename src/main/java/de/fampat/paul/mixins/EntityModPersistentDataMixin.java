@@ -28,6 +28,7 @@ public class EntityModPersistentDataMixin implements IEntityModPersistentData {
 
     // Inject into Entity:writeNbt-method on top (HEAD) and put our mods data in
     // Check: src\main\java\de\fampat\paul\networking\PaulSpawnServerListener.java
+    // Because the injected method does have a return value, we add as a second argument "CallbackInfoReturnable<T> info"
     @Inject(method = "writeNbt", at = @At("HEAD"))
     protected void injectMethodWriteNbt(NbtCompound nbt, CallbackInfoReturnable<NbtCompound> info) {
         if (this.persistentData != null) {
@@ -37,6 +38,7 @@ public class EntityModPersistentDataMixin implements IEntityModPersistentData {
 
     // Inject into Entity:readNbt-method on top (HEAD) and read our mods data
     // Check: src\main\java\de\fampat\paul\networking\PaulSpawnServerListener.java
+    // Because the injected method does not have a return value, we add as a second argument "CallbackInfo info"
     @Inject(method = "readNbt", at = @At("HEAD"))
     protected void injectMethodReadNbt(NbtCompound nbt, CallbackInfo info) {
         if (nbt.contains(EntryMain.NAMESPACE)) {

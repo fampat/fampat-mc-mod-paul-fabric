@@ -2,6 +2,7 @@ package de.fampat.paul.registry;
 
 import de.fampat.paul.EntryMain;
 import de.fampat.paul.entities.PaulEntity;
+import de.fampat.paul.networking.PaulSitServerListener;
 import de.fampat.paul.networking.PaulSpawnServerListener;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityTypeBuilder;
 import net.minecraft.entity.EntityDimensions;
@@ -40,7 +41,10 @@ public final class ModRegistry {
 	public static void init() {
 		EntryMain.LOGGER.info("PAUL: Woof world! iam now registered, woof!");
 
-        // Initialize the listener that spawns Paul on the server
+        // Initialize the listener that spawns or unspawns Paul on the server
         PaulSpawnServerListener.register();
+
+        // Initialize the listener that sits or unsits Paul on the server
+        PaulSitServerListener.register();
 	}
 }
