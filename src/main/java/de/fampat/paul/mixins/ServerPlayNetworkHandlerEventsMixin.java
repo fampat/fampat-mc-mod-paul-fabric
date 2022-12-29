@@ -13,8 +13,6 @@ import net.minecraft.server.network.ServerPlayNetworkHandler;
 abstract class ServerPlayNetworkHandlerEventsMixin {
     @Inject(method = "requestTeleport(DDDFF)V", at = @At("HEAD"))
     public void onRequestTeleport1(CallbackInfo info) {
-        EntryMain.LOGGER.info("ServerPlayNetworkHandler:requestTeleport(DDDFF)V");
-
         // Fetch the target class instance
         ServerPlayNetworkHandler networkHandler = (ServerPlayNetworkHandler) (Object) this;
         
@@ -23,9 +21,7 @@ abstract class ServerPlayNetworkHandlerEventsMixin {
     }
 
     @Inject(method = "requestTeleport(DDDFFLjava/util/Set;)V", at = @At("HEAD"))
-    public void onRequestTeleport2(CallbackInfo info) {
-        EntryMain.LOGGER.info("ServerPlayNetworkHandler:requestTeleport(DDDFFLjava/util/Set;)V");
-        
+    public void onRequestTeleport2(CallbackInfo info) {       
         // Fetch the target class instance
         ServerPlayNetworkHandler networkHandler = (ServerPlayNetworkHandler) (Object) this;
         
@@ -34,9 +30,7 @@ abstract class ServerPlayNetworkHandlerEventsMixin {
     }
 
     @Inject(method = "requestTeleport(DDDFFLjava/util/Set;Z)V", at = @At("HEAD"))
-    public void onRequestTeleport3(CallbackInfo info) {
-        EntryMain.LOGGER.info("ServerPlayNetworkHandler:requestTeleport(DDDFFLjava/util/Set;Z)V");
-        
+    public void onRequestTeleport3(CallbackInfo info) {     
         // Fetch the target class instance
         ServerPlayNetworkHandler networkHandler = (ServerPlayNetworkHandler) (Object) this;
         

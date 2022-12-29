@@ -21,8 +21,6 @@ public class PaulSpawnServerListener {
     public static void register() {
         ServerPlayNetworking.registerGlobalReceiver(EntryMain.C2S_NETWORK_PACKET_ID_PAUL_SPAWN, (server, player, handler, buf, responseSender) -> {
             server.execute(() -> {
-                EntryMain.LOGGER.info("Spawning or despawning Paul!");
-
                 // Only specific players are allowed to call Paul
                 if (!player.getName().equals(Text.literal("Devpat")) && !player.getName().equals(Text.literal("StyPat"))) {
                     return;
@@ -33,11 +31,9 @@ public class PaulSpawnServerListener {
 
                 // Check if the player already has called Paul before
                 if (!playerModPersistentData.contains(paulUUIDName)) {
-                    EntryMain.LOGGER.info("Pauls UUID is not yet set, spawning Paul now...");
                     player.sendMessage(Text.translatable("paul_come_here.text.paul.fampat.de"), false);
                     spawnPaul(player, playerModPersistentData);
                 } else {
-                    EntryMain.LOGGER.info("Pauls UUID is already set, despawning Paul...");
                     despawnPaul(player, playerModPersistentData);
                 }
             });
@@ -99,9 +95,6 @@ public class PaulSpawnServerListener {
 
             // Remove the UUID from the player
             playerModPersistentData.remove(paulUUIDName);
-
-            // Log an despawning message
-            EntryMain.LOGGER.info("Despawned Paul due to request");
         }
     }
 }

@@ -14,8 +14,6 @@ public class PaulSitServerListener {
     public static void register() {
         ServerPlayNetworking.registerGlobalReceiver(EntryMain.C2S_NETWORK_PACKET_ID_PAUL_SIT, (server, player, handler, buf, responseSender) -> {
             server.execute(() -> {
-                EntryMain.LOGGER.info("Sit or unsit Paul!");
-
                 // Only specific players are allowed to call Paul
                 if (!player.getName().equals(Text.literal("Devpat")) && !player.getName().equals(Text.literal("StyPat"))) {
                     return;

@@ -6,7 +6,6 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import de.fampat.paul.EntryMain;
 import de.fampat.paul.networking.PaulSpawnServerListener;
 import net.minecraft.entity.Entity;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -15,8 +14,6 @@ import net.minecraft.server.network.ServerPlayerEntity;
 abstract class ServerPlayerEntityEventsMixin {
     @Inject(method = "onDeath", at = @At("HEAD"))
     protected void onOnDeath(CallbackInfo info) {
-        EntryMain.LOGGER.info("ServerPlayerEntity:onDeath");
-
         // Fetch the target class instance
         ServerPlayerEntity serverPlayer = (ServerPlayerEntity) (Object) this;
 
@@ -26,8 +23,6 @@ abstract class ServerPlayerEntityEventsMixin {
 
     @Inject(method = "onDisconnect", at = @At("HEAD"))
     protected void onOnDisconnect(CallbackInfo info) {
-        EntryMain.LOGGER.info("ServerPlayerEntity:onDisconnect");
-
         // Fetch the target class instance
         ServerPlayerEntity serverPlayer = (ServerPlayerEntity) (Object) this;
         
@@ -36,8 +31,6 @@ abstract class ServerPlayerEntityEventsMixin {
 
     @Inject(method = "moveToWorld", at = @At("HEAD"))
     protected void onMoveToWorld(CallbackInfoReturnable<Entity> info) {
-        EntryMain.LOGGER.info("ServerPlayerEntity:moveToWorld");
-
         // Fetch the target class instance
         ServerPlayerEntity serverPlayer = (ServerPlayerEntity) (Object) this;
 
