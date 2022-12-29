@@ -5,7 +5,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import de.fampat.paul.EntryMain;
 import de.fampat.paul.networking.PaulSpawnServerListener;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 

@@ -39,8 +39,6 @@ public final class ModRegistry {
 	}
 
 	public static void init() {
-		EntryMain.LOGGER.info("PAUL: Woof world! iam now registered, woof!");
-
         // Initialize the listener that spawns or unspawns Paul on the server
         PaulSpawnServerListener.register();
 

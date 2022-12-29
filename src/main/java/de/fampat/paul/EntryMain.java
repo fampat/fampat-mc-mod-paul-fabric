@@ -17,6 +17,7 @@ public class EntryMain implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
+        LOGGER.info("Woof world! iam now initialized, woof!");
 		ModRegistry.init();
 	}
 
