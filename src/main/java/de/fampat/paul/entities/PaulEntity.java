@@ -465,50 +465,49 @@ public class PaulEntity extends TameableEntity {
     public ActionResult interactMob(PlayerEntity player, Hand hand) {
         ItemStack heldItem = player.getStackInHand(hand);
 
-        // Hand is not empty and Paul is not busy with a bone
-        if (!heldItem.isEmpty() && !this.isCarryBone()) {
-            boolean isBone = heldItem.isOf(Items.BONE);
-            boolean isFood = heldItem.isFood();
+        // Determine if held item is bone oder food
+        boolean isBone = heldItem.isOf(Items.BONE);
+        boolean isFood = heldItem.isFood();
 
-            if (!isBone) {
-                // Check if we have a bone-tagged item
-                isBone = heldItem.isIn(TagKey.of(Registry.ITEM_KEY, new Identifier("bones")));
-            }
+        // Maybe not an bone, but nontheless a sort of bone
+        if (!isBone) {
+            // Check if we have a bone-tagged item
+            isBone = heldItem.isIn(TagKey.of(Registry.ITEM_KEY, new Identifier("bones")));
+        }
 
-            // ...Maybe its something to eat?
-            if (isFood || isBone) {
-                if (this.world.isClient) {
-                    // Some lovely particles
-                    for (int i = 0; i < 10; i++) {
-                        this.world.addParticle(i % 5 == 0 ? ParticleTypes.HEART : ParticleTypes.HAPPY_VILLAGER,
-                                this.getPos().x + this.random.nextFloat() - 0.5f,
-                                this.getPos().y + 0.5d + this.random.nextFloat() - 0.5f,
-                                this.getPos().z + this.random.nextFloat() - 0.5f, 0, 0, 0);
-                    }
-
-                    // Remove the item from players hand on client, nithing more is needed,
-                    // rest is handled server-side
-                    return ActionResult.CONSUME;
+        // ...If its something to eat and he is not carriying a bone, continue
+        if (!this.isCarryBone() && (isFood || isBone)) {
+            if (this.world.isClient) {
+                // Some lovely particles
+                for (int i = 0; i < 10; i++) {
+                    this.world.addParticle(i % 5 == 0 ? ParticleTypes.HEART : ParticleTypes.HAPPY_VILLAGER,
+                            this.getPos().x + this.random.nextFloat() - 0.5f,
+                            this.getPos().y + 0.5d + this.random.nextFloat() - 0.5f,
+                            this.getPos().z + this.random.nextFloat() - 0.5f, 0, 0, 0);
                 }
 
-                // Reduce count in hand
-                heldItem.decrement(1);
-
-                if (isBone) {
-                    // If its a bone, carry it...
-                    this.carryBone(true);
-                } else {
-                    // ... else make eat-noises
-                    this.playSound(SoundEvents.ENTITY_FOX_EAT, this.getSoundVolume(),
-                            (this.random.nextFloat() - this.random.nextFloat()) * 0.2f + 1.0f);
-                }
-
-                // Add a speed and dmg-boost effect after feeding
-                this.addStatusEffect(new StatusEffectInstance(StatusEffects.SPEED, 36000, 0, true, true, false));
-                this.addStatusEffect(new StatusEffectInstance(StatusEffects.STRENGTH, 36000, 0, true, true, false));
-
+                // Remove the item from players hand on client, nithing more is needed,
+                // rest is handled server-side
                 return ActionResult.CONSUME;
             }
+
+            // Reduce count in hand
+            heldItem.decrement(1);
+
+            if (isBone) {
+                // If its a bone, carry it...
+                this.carryBone(true);
+            } else {
+                // ... else make eat-noises
+                this.playSound(SoundEvents.ENTITY_FOX_EAT, this.getSoundVolume(),
+                        (this.random.nextFloat() - this.random.nextFloat()) * 0.2f + 1.0f);
+            }
+
+            // Add a speed and dmg-boost effect after feeding
+            this.addStatusEffect(new StatusEffectInstance(StatusEffects.SPEED, 36000, 0, true, true, false));
+            this.addStatusEffect(new StatusEffectInstance(StatusEffects.STRENGTH, 36000, 0, true, true, false));
+
+            return ActionResult.CONSUME;
         } else {
             // Paul is also a mobile ender-chest!
             EnderChestInventory playerEnderChestInventory = player.getEnderChestInventory();
