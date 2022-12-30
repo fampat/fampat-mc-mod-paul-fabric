@@ -127,7 +127,7 @@ public class PaulEntity extends TameableEntity {
         return MobEntity
                 .createMobAttributes()
                 .add(EntityAttributes.GENERIC_FOLLOW_RANGE, 48.0)
-                .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.4)
+                .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.3)
                 .add(EntityAttributes.GENERIC_MAX_HEALTH, 20.0)
                 .add(EntityAttributes.GENERIC_KNOCKBACK_RESISTANCE, 0.5)
                 .add(EntityAttributes.GENERIC_ATTACK_SPEED, 1.1)
