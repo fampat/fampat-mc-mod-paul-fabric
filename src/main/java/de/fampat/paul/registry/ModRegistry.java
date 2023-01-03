@@ -22,7 +22,7 @@ public final class ModRegistry {
 		FabricEntityTypeBuilder.<PaulEntity>createMob()
 			.entityFactory(PaulEntity::new)
 			.defaultAttributes(PaulEntity::createPaulAttributes)
-			.dimensions(EntityDimensions.changing(1.3f, 1.4f))
+			.dimensions(EntityDimensions.changing(1.25f, 1.4f))
 			.build()
 	);
 
