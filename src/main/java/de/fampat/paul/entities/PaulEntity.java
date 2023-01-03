@@ -44,13 +44,14 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.particle.ParticleTypes;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.tag.TagKey;
 import net.minecraft.screen.GenericContainerScreenHandler;
 import net.minecraft.screen.SimpleNamedScreenHandlerFactory;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.stat.Stats;
-import net.minecraft.tag.TagKey;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
@@ -59,7 +60,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.random.Random;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldAccess;
 import net.minecraft.world.event.GameEvent;
@@ -472,7 +472,7 @@ public class PaulEntity extends TameableEntity {
         // Maybe not an bone, but nontheless a sort of bone
         if (!isBone) {
             // Check if we have a bone-tagged item
-            isBone = heldItem.isIn(TagKey.of(Registry.ITEM_KEY, new Identifier("bones")));
+            isBone = heldItem.isIn(TagKey.of(RegistryKeys.ITEM, new Identifier("bones")));
         }
 
         // ...If its something to eat and he is not carriying a bone, continue

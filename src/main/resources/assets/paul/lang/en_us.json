@@ -3,5 +3,6 @@
     "paul_come_here.text.paul.fampat.de" : "Paul come here!",
     "paul_sit.text.paul.fampat.de" : "Paul sit!",
     "paul_unsit.text.paul.fampat.de" : "Paul stand up!",
-    "paul_despawned.text.paul.fampat.de" : "Paul where are you?"
+    "paul_despawned.text.paul.fampat.de" : "Paul where are you?",
+    "paul.ambient" : "Paul barks"
 }

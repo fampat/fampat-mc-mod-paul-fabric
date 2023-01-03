@@ -7,7 +7,8 @@ import de.fampat.paul.networking.PaulSpawnServerListener;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityTypeBuilder;
 import net.minecraft.entity.EntityDimensions;
 import net.minecraft.entity.EntityType;
-import net.minecraft.util.registry.Registry;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
 import net.minecraft.sound.SoundEvent;
 
 public final class ModRegistry {
@@ -17,7 +18,7 @@ public final class ModRegistry {
 
     // Register Paul entity
     public static final EntityType<PaulEntity> PAUL_ENTITY_TYPE = Registry.register(
-		Registry.ENTITY_TYPE,
+		Registries.ENTITY_TYPE,
 		EntryMain.id("paul"),
 		FabricEntityTypeBuilder.<PaulEntity>createMob()
 			.entityFactory(PaulEntity::new)
@@ -35,7 +36,11 @@ public final class ModRegistry {
 
 	private static SoundEvent registerSound(String path) {
 		var modId = EntryMain.id(path);
-		return Registry.register(Registry.SOUND_EVENT, modId, new SoundEvent(modId));
+		return Registry.register(
+            Registries.SOUND_EVENT,
+            modId,
+            SoundEvent.of(modId)
+        );
 	}
 
 	public static void init() {

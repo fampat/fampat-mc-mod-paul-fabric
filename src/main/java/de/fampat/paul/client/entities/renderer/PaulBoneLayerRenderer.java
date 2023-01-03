@@ -12,7 +12,7 @@ import net.minecraft.client.render.model.json.ModelTransformation;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.util.math.Vec3f;
+import net.minecraft.util.math.RotationAxis;
 
 @Environment(value = EnvType.CLIENT)
 public class PaulBoneLayerRenderer extends FeatureRenderer<PaulEntity, PaulModel<PaulEntity>> {
@@ -44,15 +44,15 @@ public class PaulBoneLayerRenderer extends FeatureRenderer<PaulEntity, PaulModel
         );
 
         // Yaw and pitch the bone when the head does
-        matrixStack.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(headYaw));
-        matrixStack.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion(headPitch));
+        matrixStack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(headYaw));
+        matrixStack.multiply(RotationAxis.POSITIVE_X.rotationDegrees(headPitch));
 
         // Offset the bone that it fits the mouth perfectly
         matrixStack.translate(-0.1F, 0.05F, -0.4F);     
 
         // Rotate the bone that it alignes with the mouth angle
-        matrixStack.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion(110.0f));
-        matrixStack.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(-45.0f));
+        matrixStack.multiply(RotationAxis.POSITIVE_X.rotationDegrees(110.0f));
+        matrixStack.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(-45.0f));
 
         // Create the bone
         ItemStack itemStack = new ItemStack(Items.BONE);
