@@ -16,7 +16,7 @@ public class KeyStroke {
     public static void registerPaulSpawnToggle() {
         // Setup the key
         keyBindingPaulSpawn = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-            "paul_come_here.paul.fampat.de",
+            "paul_come_here.text.paul.fampat.de",
             InputUtil.Type.KEYSYM,
             GLFW.GLFW_KEY_P,
             "paul.paul.fampat.de"
@@ -35,7 +35,7 @@ public class KeyStroke {
     public static void registerPaulSitToggle() {
         // Setup the key
         keyBindingPaulSit = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-            "paul_sit.paul.fampat.de",
+            "paul_sit.text.paul.fampat.de",
             InputUtil.Type.KEYSYM,
             GLFW.GLFW_KEY_O,
             "paul.paul.fampat.de"
